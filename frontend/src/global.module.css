@@ -1,3 +1,20 @@
-.roundedContainr {
+.roundedContainer {
     border-radius: 8px;
+    border: 2px solid black; 
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
 }
