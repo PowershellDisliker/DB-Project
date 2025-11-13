@@ -1,16 +1,19 @@
-import styles from "./App.module.css"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Login } from "./login";
+import { Home } from "./home";
 
 function App() {
 
+  let loggedIn: boolean = false;
+
   return (
-      <div className={styles.mainContent}>
-        <div className={styles.banner}>
-          <button>Home</button>
-          <h2>Connect 4</h2>
-          <button>Login</button>
-        </div>
-        <canvas></canvas>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element = {loggedIn ? <Home/> : <Login/>}/>
+          <Route path="/home" element={<Home/>}/>
+          <Route path="/login" element={<Login/>}/>
+        </Routes>
+      </BrowserRouter>
   )
 }
 
