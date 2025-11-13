@@ -4,7 +4,12 @@ function App() {
 
   return (
       <div className={styles.mainContent}>
-        <h1>Video Game! (maybe)</h1>
+        <div className={styles.banner}>
+          <button>Home</button>
+          <h2>Connect 4</h2>
+          <button>Login</button>
+        </div>
+        <canvas></canvas>
       </div>
   )
 }

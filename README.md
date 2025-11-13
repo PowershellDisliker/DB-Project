@@ -1,4 +1,4 @@
-# Video Game!!! (Maybe)
+# Video Game!!!
 
 ## How the Game Works
 We'll describe the game here
