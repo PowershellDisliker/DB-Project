@@ -1,6 +1,6 @@
+import type { PreviousGameProps } from "../../common/types";
 
-
-function PreviousGame() {
+function PreviousGame(props: PreviousGameProps) {
 
     return (
         <div>

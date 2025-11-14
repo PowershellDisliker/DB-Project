@@ -1,6 +1,8 @@
 import React from 'react';
 
-function OpenGame() {
+import type { OpenGameProps } from '../../common/types';
+
+function OpenGame(props: OpenGameProps) {
 
     return (
         <div>

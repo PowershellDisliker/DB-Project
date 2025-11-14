@@ -8,48 +8,50 @@ import { PreviousGame } from "../components/previous-game";
 import globalStyles from "../global.module.css";
 import homeStyles from "./home.module.css";
 
-import type { HomeViewModel } from "./home-vm";
+import type { HomeViewModel, getFriends, getOpenGames, getPreviousGames, getUserDetails } from "./home-vm";
 import type { FriendProps } from "../common/types";
 
 
 function Home() {
     const [viewModel, setViewModel] = useState<HomeViewModel>();
 
-    return (
-        <div className={`${globalStyles.row} ${globalStyles.globalCenter}`}>
+    console.log(viewModel);
 
-            <div className={`${globalStyles.roundedContainer}`}>
+    return (
+        <div className={`${globalStyles.row} ${globalStyles.globalCenter} ${homeStyles.mainContainer}`}>
+
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
                 <h1>Friends List</h1>
-                {viewModel?.friends && <LoadingIcon/>}
+                {!viewModel?.friends && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.friends.map((value) => {
+                    {viewModel?.friends?.map((value) => {
                         return (
-                            <Friend props={value}/>
+                            <Friend username={value.username} online={value.online}/>
                         )
                     })}
                 </ul>
             </div>
 
-            <div className={`${globalStyles.column} ${globalStyles.roundedContainer}`}>
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
                 <h1>Hello User!</h1>
                 <h3>Open Server / Lobby List</h3>
-                {viewModel?.open_games && <LoadingIcon/>}
+                {!viewModel?.open_games && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.open_games.map((value) => {
+                    {viewModel?.open_games?.map((value) => {
                         return (
-                            <OpenGame props={value} />
+                            <OpenGame id={value.id} />
                         )
                     })}
                 </ul>
             </div>
 
-            <div className={`${globalStyles.roundedContainer}`}>
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
                 <h1>Player Stats</h1>
-                {viewModel?.previous_games && <LoadingIcon/>}
+                {!viewModel?.previous_games && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.previous_games.map((value) => {
+                    {viewModel?.previous_games?.map((value) => {
                         return (
-                            <PreviousGame props={value} />
+                            <PreviousGame id={value.id} />
                         )
                     })}
                 </ul>
