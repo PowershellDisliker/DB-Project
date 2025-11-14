@@ -1,3 +1,8 @@
+body {
+    overflow-y: hidden;
+    background-color: burlywood;
+}
+
 .roundedContainer {
     border-radius: 8px;
     border: 2px solid black; 
@@ -7,6 +12,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.globalCenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .column {

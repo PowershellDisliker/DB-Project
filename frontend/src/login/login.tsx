@@ -42,7 +42,7 @@ function Login() {
     }
 
     return (
-        <div className={`${globalStyles.center} ${globalStyles.column}`}>
+        <div className={`${globalStyles.globalCenter} ${globalStyles.column}`}>
             <form className={`${globalStyles.roundedContainer} ${globalStyles.column}`} onSubmit={submitForm}>
                 <div className={`${globalStyles.center} ${loginStyles.inputElement}`}>
                     <label htmlFor="username">Username:</label>

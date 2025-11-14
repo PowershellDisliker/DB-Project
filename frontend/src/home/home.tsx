@@ -5,7 +5,7 @@ import homeStyles from "./home.module.css";
 function Home() {
 
     return (
-        <div className={`${globalStyles.row} ${globalStyles.center}`}>
+        <div className={`${globalStyles.row} ${globalStyles.globalCenter}`}>
             <div className={`${globalStyles.roundedContainer}`}>
                 <h1>Friends List</h1>
             </div>
