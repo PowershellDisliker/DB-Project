@@ -1,0 +1,8 @@
+.mainContainer {
+    justify-content: space-between;
+    margin: 20px;
+}
+
+.centerContainer {
+    width: 50%;
+}
