@@ -5,6 +5,7 @@ from .dto import LoginRequest
 def run() -> FastAPI: 
     app = FastAPI()
 
+    # REMOVE IN PRODUCTION!!!
     origins = [
         "http://localhost:5173"
     ]
@@ -16,6 +17,7 @@ def run() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"]
     )
+    # END REMOVE!!!
 
     # Login route, used by Login page
     @app.post("/login")

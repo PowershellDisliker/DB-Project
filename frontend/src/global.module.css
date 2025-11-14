@@ -1,6 +1,6 @@
 body {
     overflow-y: hidden;
-    background-color: burlywood;
+    background-color: rgb(176, 156, 129);
 }
 
 .roundedContainer {
@@ -29,4 +29,9 @@ body {
 .row {
     display: flex;
     flex-direction: row;
+}
+
+.spaceBetween {
+    justify-content: space-between;
+    align-items: center;
 }

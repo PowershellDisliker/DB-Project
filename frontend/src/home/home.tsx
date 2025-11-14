@@ -20,8 +20,10 @@ function Home() {
     return (
         <div className={`${globalStyles.row} ${globalStyles.globalCenter} ${homeStyles.mainContainer}`}>
 
-            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
-                <h1>Friends List</h1>
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter} ${globalStyles.spaceBetween}`}>
+                <div>
+                    <h1>Friends List</h1>
+                </div>
                 {!viewModel?.friends && <LoadingIcon/>}
                 <ul>
                     {viewModel?.friends?.map((value) => {
@@ -32,9 +34,11 @@ function Home() {
                 </ul>
             </div>
 
-            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
-                <h1>Hello User!</h1>
-                <h3>Open Server / Lobby List</h3>
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter} ${homeStyles.centerContainer} ${globalStyles.spaceBetween}`}>
+                <div>
+                    <h1>Hello User!</h1>
+                    <h3>Open Server / Lobby List</h3>
+                </div>
                 {!viewModel?.open_games && <LoadingIcon/>}
                 <ul>
                     {viewModel?.open_games?.map((value) => {
@@ -45,8 +49,10 @@ function Home() {
                 </ul>
             </div>
 
-            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter}`}>
-                <h1>Player Stats</h1>
+            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
+                <div>
+                    <h1>Player Stats</h1>
+                </div>
                 {!viewModel?.previous_games && <LoadingIcon/>}
                 <ul>
                     {viewModel?.previous_games?.map((value) => {
