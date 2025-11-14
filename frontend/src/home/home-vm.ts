@@ -1,22 +1,8 @@
-type GameResult = {
-    duration: number;
-    winner: number;
-}
-
-type OpenGame = {
-    game_id: string;
-    
-}
-
-type Friend = {
-    username: string;
-    status: number;
-    profile_picture: Object;
-}
+import type { FriendProps, OpenGameProps, PreviousGameProps } from "../common/types";
 
 export type HomeViewModel = {
     username: string;
-    previous_games: GameResult[];
-    open_games: OpenGame[];
-    friends: Friend[];
+    previous_games: PreviousGameProps[];
+    open_games: OpenGameProps[];
+    friends: FriendProps[];
 }

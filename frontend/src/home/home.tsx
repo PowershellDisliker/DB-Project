@@ -1,7 +1,16 @@
 import React, {useState} from "react";
+
+import { LoadingIcon } from '../components/loading';
+import { Friend } from '../components/friend';
+import { OpenGame } from "../components/open-game";
+import { PreviousGame } from "../components/previous-game";
+
 import globalStyles from "../global.module.css";
 import homeStyles from "./home.module.css";
+
 import type { HomeViewModel } from "./home-vm";
+import type { FriendProps } from "../common/types";
+
 
 function Home() {
     const [viewModel, setViewModel] = useState<HomeViewModel>();
