@@ -20,9 +20,9 @@ def run() -> FastAPI:
     # END REMOVE!!!
 
     # Login route, used by Login page
-    @app.post("/login")
+    @app.post("/api/login")
     async def login(request: LoginRequest):
-        if request.user_attempt == "test" and request.pass_attempt == "test":
+        if request.username == "test" and request.password == "test":
             return {"success": True}
         return {"success": False}
 

@@ -1,8 +1,12 @@
-async function RequestFromServer<T>(request: Object) {
-    const URI: string = "http://127.0.0.1:8000/login"
+// This file contains all functions to that the frontend uses to query the backend
+
+import { type OpenGameProps, type UserDetails, type FriendProps } from "../common/types";
+
+async function RequestFromServer<T>(route: string, request: Object) {
+    const URI: string = "http://127.0.0.1:8000";
 
     const res = await fetch(
-        URI,
+        URI + route,
         {
             method: "POST",
             headers: {
@@ -22,5 +26,17 @@ async function RequestFromServer<T>(request: Object) {
 }
 
 export const AttemptLogin = async (username: string, password: string): Promise<Boolean> => {
-    return RequestFromServer<Boolean>({username: username, password: password});
+    return RequestFromServer<Boolean>("/api/login", {username: username, password: password});
+}
+
+export const GetUserInfo = async (token: string) => {
+    return RequestFromServer<UserDetails>("/api/userinfo", {token: token});
+}
+
+export const GetOpenGames = async () => {
+    return RequestFromServer<OpenGameProps[]>("/api/opengames", {});
+}
+
+export const GetFriends = async (userid: string) => {
+    return RequestFromServer<FriendProps[]>("/api/friends", {userid: userid});
 }
