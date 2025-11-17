@@ -1,6 +1,6 @@
 interface UserDetails {
     username: string;
-    account_created: Date;
+    account_created: string;
     total_wins: number;
     total_losses: number;
 }

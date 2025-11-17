@@ -1,11 +1,17 @@
+:root {
+    --primary-color: rgb(60, 60, 60);
+    --background-color: rgb(214, 191, 161);
+}
+
 body {
     overflow-y: hidden;
-    background-color: rgb(176, 156, 129);
+    background-color: var(--background-color);
+    color: var(--primary-color);
 }
 
 .roundedContainer {
     border-radius: 8px;
-    border: 2px solid black; 
+    border: 2px solid var(--primary-color); 
 }
 
 .center {
