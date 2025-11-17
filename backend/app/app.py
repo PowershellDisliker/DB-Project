@@ -4,6 +4,7 @@ from .dto import LoginRequest
 
 def run() -> FastAPI: 
     app = FastAPI()
+    databse = DBClient()
 
     # REMOVE IN PRODUCTION!!!
     origins = [
@@ -27,3 +28,6 @@ def run() -> FastAPI:
         return {"success": False}
 
     return app
+
+    @app.get("/api/userdetails")
+    async def get_user_details(request: UserDetailsRequest):
