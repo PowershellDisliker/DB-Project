@@ -2,11 +2,14 @@ import React, {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import loginStyles from "./login.module.css";
 import globalStyles from "../global.module.css";
-import { type loginViewModel, AttemptLogin } from "./login-vm";
+import { type loginViewModel } from "./login-vm";
+import { AttemptLogin } from "../api";
 
 function Login() {
+    // Used for SPA re-routing
     const navigate = useNavigate();
 
+    // Component State
     const [viewModel, updateViewModel] = useState<loginViewModel>({
         username: null,
         password: null,
@@ -14,6 +17,7 @@ function Login() {
         failedLoginAttempt: false,
     });
 
+    // Interaction Handlers
     const setUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
        updateViewModel(prev => ({
            ...prev,
