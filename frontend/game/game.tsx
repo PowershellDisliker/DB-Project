@@ -1,5 +1,6 @@
 import React, {useState} from "react"
 import { GameViewModel } from "./game-vm"
+import { GameCanvas } from 
 
 function Game() {
 
@@ -7,7 +8,7 @@ function Game() {
 
     return (
         <div>
-
+            
         </div>
     )
 }
