@@ -57,38 +57,41 @@ class DBClient:
 
         # metadata.create_all(self.engine)
 
+    def login_user(self, user: str, passw: str):
+        pass
+
     def register_user(self, user: str, passhash: str) -> bool:
         pass
 
     def get_user_details(self, identity: str) -> UserDetails | None:
         pass
 
-    def createToken(self, identity: str, token: str) -> bool:
+    def create_token(self, identity: str, token: str) -> bool:
         pass
 
-    def checkTokenValidity(self, identity: str, token: str) -> bool:
+    def check_token_validity(self, identity: str, token: str) -> bool:
         pass
 
-    def createOpenGame(self, user1id: str) -> bool:
+    def create_open_game(self, user1id: str) -> bool:
         pass
 
-    def getOpenGames(self) -> list[OpenGame]:
+    def get_open_games(self) -> list[OpenGame]:
         pass
 
-    def createClosedGame(self, identity: str) -> bool:
+    def create_closed_game(self, identity: str) -> bool:
         pass
 
-    def getPreviuosGames(self, identity: str) -> list[ClosedGame]:
+    def get_closed_games(self, identity: str) -> list[ClosedGame]:
         pass
 
-    def addFriend(self, user1id: str, user2id: str) -> bool:
+    def add_friend(self, user1id: str, user2id: str) -> bool:
         pass
 
-    def getFriends(self, identity: str) -> list[Friend]:
+    def get_friends(self, identity: str) -> list[Friend]:
         pass
 
-    def sendMessage(self, sender: str, recipient: str, message: str) -> bool:
+    def send_message(self, sender: str, recipient: str, message: str) -> bool:
         pass
 
-    def getMessages(self, identity: str) -> list[Message]:
+    def get_messages(self, identity: str) -> list[Message]:
         pass
