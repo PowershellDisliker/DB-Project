@@ -1,17 +1,24 @@
 :root {
-    --primary-color: rgb(60, 60, 60);
-    --background-color: rgb(214, 191, 161);
+    --foreground-color: #333333;
+    --background-color: #cecccc;
+
+    --muted-blue: #94B9AF;
+    --muted-green: #90A583;
+    --muted-yellow: #9D8420;
+    --muted-red: #942911;
+    --muted-red-200: #A95441;
+    --muted-red-400: #BA7667;
 }
 
 body {
     overflow-y: hidden;
     background-color: var(--background-color);
-    color: var(--primary-color);
+    color: var(--foreground-color);
 }
 
 .roundedContainer {
     border-radius: 8px;
-    border: 2px solid var(--primary-color); 
+    border: 2px solid var(--foreground-color); 
 }
 
 .center {
@@ -38,6 +45,7 @@ body {
 }
 
 .spaceBetween {
+    display: flex;
     justify-content: space-between;
     align-items: center;
 }

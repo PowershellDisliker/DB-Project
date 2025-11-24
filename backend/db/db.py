@@ -1,55 +1,94 @@
 from sqlalchemy import select, create_engine, Column, Integer, String, Engine, MetaData, LargeBinary, ForeignKey, UnicodeText
+from dto import *
+
 
 class DBClient:
     uri: str
     engine: Engine
 
-    def __init__(self, endpoint: str):
-        self.uri = endpoint
-        self.engine = create_engine(endpoint)
+    # def __init__(self, endpoint: str):
+        # self.uri = endpoint
+        # self.engine = create_engine(endpoint)
 
-        metadata = MetaData()
+        # metadata = MetaData()
 
-        users = Table(
-            'users', metadata,
-            Column('id', Integer, primary_key=True),
-            Column('username', String(32), nullable=False, unique=True),
-            Column('password', String(256), nullable=False),
-            Column('pfp', LargeBinary),
-        )
+        # users = Table(
+        #     'users', metadata,
+        #     Column('id', Integer, primary_key=True),
+        #     Column('username', String(32), nullable=False, unique=True),
+        #     Column('passhash', String(256), nullable=False),
+        # )
 
-        open_games = Table(
-            'OpenGames', metadata,
-            Column('id', Integer, primary_key=True),
-            Column('user1id', Integer, ForeignKey('users.id')),
-            Column('user2id', Integer, ForeignKey('users.id'), nullable=True),
-            Column('starttime', Integer, nullable=False)
-        )
+        # active_tokens = Table(
+        #     'active_tokens', metadata,
+        #     Column('token', String(32), nullable=False, unique=True)
+        # )
 
-        closed_games = Table(
-            'ClosedGames', metdata,
-            Column('id', Integer, primary_key=True),
-            Column('user1id', Integer, ForeignKey('users.id')),
-            Column('user2id', Integer, ForeignKey('users.id')),
-            Column('starttime', Integer, nullable=False),
-            Column('endtime', Integer, nullable=False),
-            Column('winner', Integer, ForeignKey('users.id'))
-        )
+        # open_games = Table(
+        #     'OpenGames', metadata,
+        #     Column('id', Integer, primary_key=True),
+        #     Column('user1id', Integer, ForeignKey('users.id')),
+        #     Column('user2id', Integer, ForeignKey('users.id'), nullable=True),
+        #     Column('starttime', Integer, nullable=False)
+        # )
+
+        # closed_games = Table(
+        #     'ClosedGames', metdata,
+        #     Column('id', Integer, primary_key=True),
+        #     Column('user1id', Integer, ForeignKey('users.id')),
+        #     Column('user2id', Integer, ForeignKey('users.id')),
+        #     Column('starttime', Integer, nullable=False),
+        #     Column('endtime', Integer, nullable=False),
+        #     Column('winner', Integer, ForeignKey('users.id'))
+        # )
         
-        friends = Table(
-            'friends', metadata,
-            Column('id1', Integer, ForeignKey('users.id')),
-            Column('id2', Integer, ForeignKey('users.id'))
-        )
+        # friends = Table(
+        #     'friends', metadata,
+        #     Column('id1', Integer, ForeignKey('users.id')),
+        #     Column('id2', Integer, ForeignKey('users.id'))
+        # )
 
-        messages = Table(
-            'messages', metadata,
-            Column('sender', Integer, ForeignKey('users.id')),
-            Column('receiver', Integer, ForeignKey('users.id')),
-            Column('message', UnicodeText)
-        )
+        # messages = Table(
+        #     'messages', metadata,
+        #     Column('sender', Integer, ForeignKey('users.id')),
+        #     Column('receiver', Integer, ForeignKey('users.id')),
+        #     Column('message', UnicodeText)
+        # )
 
-        metadata.create_all(self.engine)
+        # metadata.create_all(self.engine)
 
-    def get_user_details(self):
-        query = select()
+    def register_user(self, user: str, passhash: str) -> bool:
+        pass
+
+    def get_user_details(self, identity: str) -> UserDetails | None:
+        pass
+
+    def createToken(self, identity: str, token: str) -> bool:
+        pass
+
+    def checkTokenValidity(self, identity: str, token: str) -> bool:
+        pass
+
+    def createOpenGame(self, user1id: str) -> bool:
+        pass
+
+    def getOpenGames(self) -> list[OpenGame]:
+        pass
+
+    def createClosedGame(self, identity: str) -> bool:
+        pass
+
+    def getPreviuosGames(self, identity: str) -> list[ClosedGame]:
+        pass
+
+    def addFriend(self, user1id: str, user2id: str) -> bool:
+        pass
+
+    def getFriends(self, identity: str) -> list[Friend]:
+        pass
+
+    def sendMessage(self, sender: str, recipient: str, message: str) -> bool:
+        pass
+
+    def getMessages(self, identity: str) -> list[Message]:
+        pass

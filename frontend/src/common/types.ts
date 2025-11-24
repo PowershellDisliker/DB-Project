@@ -18,4 +18,8 @@ interface PreviousGameProps {
     id: string;
 }
 
-export type {FriendProps, OpenGameProps, PreviousGameProps, UserDetails};
+interface LoginAttempt {
+    success: boolean;
+}
+
+export type {FriendProps, OpenGameProps, PreviousGameProps, UserDetails, LoginAttempt};

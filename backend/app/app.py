@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .dto import LoginRequest
+from db import DBClient
+from config import Config
 
 def run() -> FastAPI: 
     app = FastAPI()
     databse = DBClient()
+    configuration = Config()
 
     # REMOVE IN PRODUCTION!!!
     origins = [
@@ -23,7 +26,7 @@ def run() -> FastAPI:
     # Login route, used by Login page
     @app.post("/api/login")
     async def login(request: LoginRequest):
-        if request.username == "test" and request.password == "test":
+        if request.user == "test" and request.passw == "test":
             return {"success": True}
         return {"success": False}
 
