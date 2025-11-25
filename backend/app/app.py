@@ -2,15 +2,15 @@ import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from dto import LoginRequest
+from dto import LoginRequest, RegisterRequest, NewGameRequest
 from db import DBClient
 from config import Config
 from game import GameMultiplexer
 
-def run() -> FastAPI: 
-    app = FastAPI()
-    databse = DBClient()
+def run() -> FastAPI:
     configuration = Config()
+    app = FastAPI()
+    databse = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
     game_multiplexer = GameMultiplexer()
 
     # REMOVE IN PRODUCTION!!!

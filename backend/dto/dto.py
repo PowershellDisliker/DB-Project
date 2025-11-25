@@ -5,6 +5,13 @@ class LoginRequest(BaseModel):
     user: str
     passw: str
 
+class RegisterRequest(BaseModel):
+    user: str
+    passw: str
+
+class NewGameRequest(BaseModel):
+    user1id: str
+
 # db dtos
 class UserDetails(BaseModel):
     identity: str
