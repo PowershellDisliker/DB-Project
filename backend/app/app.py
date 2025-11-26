@@ -1,6 +1,8 @@
 import json
+import jwt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 
 from dto import LoginRequest, RegisterRequest, NewGameRequest
 from db import DBClient
@@ -27,6 +29,30 @@ def run() -> FastAPI:
     )
     # END REMOVE!!!
 
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+    # Strips authenitcation header for jwt and returns current users id
+    async def get_current_user(token: str = Depends(oauth2_scheme)):
+
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+        try:
+            payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=["HS256"])
+            identity: str = payload.get("id")
+            if identity is None:
+                raise credentials_exception
+
+            return {"id": identity}
+
+        except JWTError:
+            raise credentials_exception
+
+
     # HTTP / HTTPS endpoints
     # Login route, used by Login page
     @app.post("/api/login")
@@ -48,24 +74,24 @@ def run() -> FastAPI:
     # DB routes (Need to be protected still)
     # Gets relevant user data
     @app.get("/api/user/{user_id}")
-    async def get_user_data(user_id: str):
+    async def get_user_data(user_id: str, current_user: dict = Depends(get_current_user)):
         return database.get_user_details(user_id)
 
 
     # Gets open, ongoing games
     @app.get("/api/opengames")
-    async def get_open_games():
+    async def get_open_games(current_user: dict = Depends(get_current_user)):
         return database.get_open_games()
 
     
     @app.post("/api/creategame")
-    async def create_new_game(request: NewGameRequest):
+    async def create_new_game(request: NewGameRequest, current_user: dict = Depends(get_current_user)):
         return {identity: database.create_open_game()}
     
 
     # WS endpoint
     @app.websocket("/ws/game/{game_id}")
-    async def game_websocket(conn: WebSocket, game_id: str):
+    async def game_websocket(conn: WebSocket, game_id: str, current_user: dict = Depends(get_current_user)):
         await conn.accept()
 
         try:

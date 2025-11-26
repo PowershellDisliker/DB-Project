@@ -32,7 +32,8 @@ class DBClient:
 
         active_tokens = Table(
             'active_tokens', metadata,
-            Column('token', String(32), nullable=False, unique=True)
+            Column('token', String(32), primray_key=True),
+            Column('user', UUID, ForeignKey('users.id'))
         )
 
         open_games = Table(
@@ -122,11 +123,12 @@ class DBClient:
 
 
     def create_token(self, identity: str, token: str) -> bool:
-        pass
+        result = run_exec("INSERT INTO active_tokens (token, user) VALUES (:token, :user)", {"token": token, "user": identity})
+        return result
 
 
-    def check_token_validity(self, identity: str, token: str) -> bool:
-        pass
+    def check_token_validity(self, identity: uuid.UUID, token: str) -> bool:
+        token_exists = run_query("SELECT * FROM active_tokens WHERE ")
 
 
     def create_open_game(self, user1id: str) -> bool:
