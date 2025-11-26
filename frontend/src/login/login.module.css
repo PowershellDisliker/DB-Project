@@ -1,8 +1,31 @@
 .inputElement {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
     padding: 10px;
-    gap: 25px;
+    gap: 10px;
+    width: 300px;
+}
+
+.button {
+    width: 80px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    margin-top: 20px;
+
+    transition: background-color 0.1s ease-in-out 0s;
+
+    background-color: var(--muted-blue);
+}
+
+.button:hover {
+    background-color: var(--muted-green);
+}
+
+.mainContainer {
+    padding: 10px;
+}
+
+.gap {
+    gap: 10px;
 }
