@@ -1,5 +1,6 @@
 import bcrypt
 import uuid
+import time
 
 from sqlalchemy import select, create_engine, Table, Column, Integer, String, Engine, MetaData, LargeBinary, ForeignKey, UnicodeText, text
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,14 +25,14 @@ class DBClient:
         metadata = MetaData()
 
         users = Table(
-            'users', metadata,
+            'Users', metadata,
             Column('id', UUID, primary_key=True),
             Column('username', String(32), nullable=False, unique=True),
             Column('passhash', String(256), nullable=False),
         )
 
         active_tokens = Table(
-            'active_tokens', metadata,
+            'ActiveTokens', metadata,
             Column('token', String(32), primray_key=True),
             Column('user', UUID, ForeignKey('users.id'))
         )
@@ -55,13 +56,13 @@ class DBClient:
         )
         
         friends = Table(
-            'friends', metadata,
+            'Friends', metadata,
             Column('id1', UUID, ForeignKey('users.id')),
             Column('id2', UUID, ForeignKey('users.id'))
         )
 
         messages = Table(
-            'messages', metadata,
+            'Messages', metadata,
             Column('sender', UUID, ForeignKey('users.id')),
             Column('receiver', UUID, ForeignKey('users.id')),
             Column('message', UnicodeText)
@@ -85,7 +86,7 @@ class DBClient:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """
-        result = run_query("SELECT passhash FROM users WHERE username = :username", {"username": user})
+        result = run_query("SELECT passhash FROM Users WHERE username = :username", {"username": user})
 
         if not result:
             return False
@@ -103,7 +104,7 @@ class DBClient:
 
         try:
             identity = uuid.uuid4()
-            run_query("INSERT INTO users (id, username, passhash) VALUES (:id, :uname, :passhash)", {"id": identity, "uname": user, "passhash": hashed})
+            run_query("INSERT INTO Users (id, username, passhash) VALUES (:id, :uname, :passhash)", {"id": identity, "uname": user, "passhash": hashed})
             return identity
 
         except Exception as e:
@@ -111,40 +112,95 @@ class DBClient:
             return None
 
     
-    def get_public_user_details(self, identity) -> Optional[str]:
-        result = run_query("SELECT username FROM users WHERE id = :identity", {"identity": identity})
+    def get_public_user_details(self, identity) -> Optional[UserDetails]:
+        result = run_query("SELECT username FROM Users WHERE id = :identity", {"identity": identity})
 
         if not result:
             return False
 
-        user_details = result[0].username
+        user_details = {
+            "identity": result[0].id,
+            "username": result[0].username,
+        }
 
         return user_details
 
 
     def create_token(self, identity: str, token: str) -> bool:
-        result = run_exec("INSERT INTO active_tokens (token, user) VALUES (:token, :user)", {"token": token, "user": identity})
+        result = run_exec("INSERT INTO ActiveTokens (token, user) VALUES (:token, :user)", {"token": token, "user": identity})
         return result
 
 
     def check_token_validity(self, identity: uuid.UUID, token: str) -> bool:
-        token_exists = run_query("SELECT * FROM active_tokens WHERE ")
+        token_exists = run_query("SELECT * FROM ActiveTokens WHERE identity = :id AND token = :tok", {"id": identity, "tok": token})
+
+        if token_exists is None:
+            return False
+        return True
 
 
     def create_open_game(self, user1id: str) -> bool:
-        pass
+        result = run_exect("INSERT INTO ActiveTokens (id, user1id, starttime) VALUES (:id, :user1, :user2, :start)", 
+            {"id": uuid.uuid4(), "user1": user1id, "starttime": time.now()})
+
+        if not result:
+            return False
+        return True
 
 
-    def get_open_games(self) -> list[OpenGame]:
-        pass
+    def get_open_games(self) -> Optional[list[OpenGame]]:
+        result = run_query("SELECT * FROM ActiveGames")
+
+        if not result:
+            return None
+
+        return [
+            {
+                "identity": current.id,
+                "user1id": current.user1id,
+                "user2id": current.user2id,
+                "starttime": current.starttime
+            } 
+            for current in result ]
 
 
-    def create_closed_game(self, identity: str) -> bool:
-        pass
+    def create_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID) -> bool:
+        query_result = run_query("SELECT * FROM ActiveGames where id = :id", {"id", game_id})
+
+        if query_result is None:
+            return False
+
+        game_data: OpenGame = {
+            "identity": query_result[0].id,
+            "user1id": query_result[0].user1id,
+            "user2id": query_result[0].user2id,
+            "starttime": query_result[0].starttime,
+        }
+
+        insert_result = run_exec(
+            "INSERT INTO ClosedGames (id, user1id, user2id, starttime, endtime, winner) VALUES (:id, :user1id, :user2id, :starttime, :endtime, :winner)",
+            {"id": game_data.identitty, "user1id": game_data.user1id, "user2id": game_data.user2id, "starttime": game_data.starttime, "endtime": time.now(), "winner": winner_id}
+            )
+
+        if insert_result is None:
+            return False
+        return True
 
 
-    def get_closed_games(self, identity: str) -> list[ClosedGame]:
-        pass
+    def get_closed_games(self, identity: str) -> Optional[list[ClosedGame]]:
+        result = run_query("SELECT * FROM ClosedGames")
+
+        if result is None:
+            return None
+
+        return [{
+            "identity": instance.identity,
+            "user1id": instance.user1id,
+            "user2id": instance.user2id,
+            "starttime": instance.starttime,
+            "endtime": instance.endtime,
+            "winner": instance.winner,
+        } for instance in result]
 
 
     def add_friend(self, user1id: str, user2id: str) -> bool:

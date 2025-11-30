@@ -72,13 +72,11 @@ def run() -> FastAPI:
 
     
     # DB routes (Need to be protected still)
-    # Gets relevant user data
     @app.get("/api/user/{user_id}")
     async def get_user_data(user_id: str, current_user: dict = Depends(get_current_user)):
         return database.get_user_details(user_id)
 
 
-    # Gets open, ongoing games
     @app.get("/api/opengames")
     async def get_open_games(current_user: dict = Depends(get_current_user)):
         return database.get_open_games()
@@ -87,6 +85,16 @@ def run() -> FastAPI:
     @app.post("/api/creategame")
     async def create_new_game(request: NewGameRequest, current_user: dict = Depends(get_current_user)):
         return {identity: database.create_open_game()}
+
+    
+    @app.get("/api/messages")
+    async def get_messages(current_user: dict = Depends(get_current_user)):
+        return database.get_messages(user_id)
+
+    
+    @app.post("/api/messages")
+    async def send_message(request: NewMessageRequest, current_user: dict = Depends(get_current_user)):
+        return {"success": database.send_message(current_user['id'], request.recipient, request.message)}
     
 
     # WS endpoint
@@ -95,10 +103,12 @@ def run() -> FastAPI:
         await conn.accept()
 
         try:
+            # creates game if it doesn't already and sends board state
+            conn.send_text(game_multiplexer.json_board_state(game_id))
             while True:
-                data = await conn.recieve_text()
-                game_multiplexer.process_message(game_id, data)
-                conn.send_text(game_multiplexer.json_board_state())
+                data = json.loads(await conn.recieve_text())
+                json_response = game_multiplexer.process_message(game_id, data)
+                conn.send_text(json_response)
         
         except WebSocketDisconnect:
             print("Client disconnected")

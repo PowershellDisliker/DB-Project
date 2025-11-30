@@ -37,7 +37,9 @@ class ClosedGame(BaseModel):
 
 class Friend(BaseModel):
     identity: str
+    online: bool
+    friendssince: str
 
-class Message(BaseModel):
-    sender: str
+class NewMessageRequest(BaseModel):
+    recipient: str
     message: str
