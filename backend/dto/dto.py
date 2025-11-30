@@ -40,6 +40,6 @@ class Friend(BaseModel):
     online: bool
     friendssince: str
 
-class Message(BaseModel):
-    sender: str
+class NewMessageRequest(BaseModel):
+    recipient: str
     message: str

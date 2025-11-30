@@ -1,14 +1,17 @@
+import json
+
 BOARD_COLUMNS: int = 7
 BOARD_ROWS: int = 6
 
 class Piece:
-    owner_number: int
+    owner_number: int | None
     piece_type: int
+    
 
 class ConnectFourBoard:
     player_1_id: int
     player_2_id: int
-    positions: list[list[Piece]] = [[0] * BOARD_ROWS for _ in range(BOARD_COLUMNS)]
+    positions: list[list[Piece]] = [Piece(None, 0) * BOARD_ROWS for _ in range(BOARD_COLUMNS)]
 
     
     def __init__(self, p1_id: int, p2_id: int) -> None:
@@ -25,6 +28,9 @@ class ConnectFourBoard:
         if column < 0 or column >= BOARD_COLUMNS:
             return False
 
+
+    def json_board_state() -> str:
+        return json.dumps(positions)
 
 
     def check_for_winner(self) -> int:
