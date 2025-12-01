@@ -50,3 +50,8 @@ class Friend(BaseModel):
 class NewMessageRequest(BaseModel):
     recipient: str
     message: str
+
+class MultiplexerMessage(BaseModel):
+    game_id: uuid.UUID
+    request_type: str
+    request_value: str

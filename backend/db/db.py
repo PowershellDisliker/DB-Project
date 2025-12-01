@@ -65,7 +65,7 @@ class DBClient:
         messages = Table(
             'Messages', metadata,
             Column('ID', UUID, primary_key=True),
-            Column('TimeStamp': Integer, nullable=False),
+            Column('TimeStamp', Integer, nullable=False),
             Column('SenderID', UUID, ForeignKey('users.id')),
             Column('RecipientID', UUID, ForeignKey('users.id')),
             Column('Message', UnicodeText)
