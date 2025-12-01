@@ -65,47 +65,49 @@ def run() -> FastAPI:
         # Real return value, stubbed above.
         success = database.login_user(self, request.user, request.passw)
 
-        return LoginResponse(
-            success=success
-        )
+        return {
+            "success": success
+        }
         
 
     # Registers a new user
     @app.post("/api/register")
-    async def register_new_user(request: RegisterRequest):
+    async def register_new_user(request: RegisterRequest) -> RegisterResponse:
         success = database.register_user(request.username, request.password)
 
-        return RegisterResponse(
-            success=success
-        )
+        return {
+            "success": success
+        }
 
     
     # DB routes
     @app.get("/api/user/public")
-    async def public_user_data(request: PublicUserDataRequest, current_user: dict = Depends(get_current_user)):
+    async def public_user_data(request: PublicUserDataRequest, current_user: dict = Depends(get_current_user)) -> PublicUserDataResponse:
         data = database.get_public_user(user_id)
 
-        return PublicUserDataResponse(
-            username=data.Username,
-            online=data.Online
-        )
+        return {
+            "username": data.Username,
+            "online": data.Online
+        }
 
 
     @app.get("/api/user/private")
-    async def get_user_data(request: PrivateUserDataRequest, current_user: dict = Depends(get_current_user)):
-        return PrivateUserDataResponse(
-            user_id=data.UserID,
-            username=data.Username,
-            online=data.Online,
-            pass_hash=data.PassHash
-        )
+    async def get_user_data(request: PrivateUserDataRequest, current_user: dict = Depends(get_current_user)) -> PrivateUserDataResponse:
+        data = database.get_private_user(request.user_id)
+
+        return {
+            "user_id": d.ID,
+            "username": d.Username,
+            "pass_hash": d.PassHash,
+            "online": d.Online
+        }
 
 
     @app.get("/api/opengames")
-    async def get_open_games(current_user: dict = Depends(get_current_user)):
+    async def get_open_games(current_user: dict = Depends(get_current_user)) -> list[GetOpenGamesResponse]:
         data = database.get_open_games()
 
-        games = [
+        return [
             {
                 "gameID": d.GameID,
                 "user1ID": d.User1ID,
@@ -113,14 +115,10 @@ def run() -> FastAPI:
             } 
             for d in data
         ]
-        
-        return GetOpenGamesResponse(
-            games=games
-        )
 
     
     @app.post("/api/opengames")
-    async def create_new_game(request: PostOpenGamesRequest, current_user: dict = Depends(get_current_user)):
+    async def create_new_game(request: PostOpenGamesRequest, current_user: dict = Depends(get_current_user)) -> PostOpenGamesResponse:
         data = database.post_open_game()
 
         success = True
@@ -128,33 +126,41 @@ def run() -> FastAPI:
         if data is not None:
             success = False
 
-        return PostOpenGamesResponse(
-            success,
-            data.ID
-        )
+        return {
+            "success": success,
+            "game_id": data.ID
+        }
 
 
     @app.get("/api/closedgames")
-    async def get_closed_games(request: GetClosedGameRequest, current_user: dict = Depends(get_current_user)):
+    async def get_closed_games(request: GetClosedGameRequest, current_user: dict = Depends(get_current_user)) -> GetClosedGameResponse:
         data = database.get_closed_games()
         
-        return GetClosedGameResponse(
-            uuid=data.ID,
-            user1uuid=data.User1ID,
-            user2uuid=data.User2ID,
-            winner=data.Winner,
-            duration=(data.EndTime - data.StartTime)
-        )
+        return {
+            "uuid": data.ID,
+            "user_1_id": data.User1ID,
+            "user_2_id": data.User2ID,
+            "winner": data.Winner,
+            "duration": (data.EndTime - data.StartTime)
+        }
 
 
     @app.post("/api/closedgames")
-    async def create_closed_game(request: ClosedGamePostRequest, current_user: dict = Depends(get_current_user)):
-        return {"success": database.post_closed_game(request.identity)}
+    async def create_closed_game(request: PostClosedGameRequest, current_user: dict = Depends(get_current_user)):
+        data = database.post_closed_game(request.identity)
+        
+        return PostClosedGameResponse(
+            success=data.success
+        )
 
     
     @app.get("/api/friends")
     async def get_friends(request: FriendsGetRequest, current_user: dict = Depends(get_current_user)):
-        return {"friends": database.get_friends()}
+        data = database.get_friends()
+        
+        return GetFriendsRespnse(
+
+        )
 
     
     @app.post("/api/friends")

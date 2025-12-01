@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import TypedDict
 import uuid
 
 # in-flight dtos
@@ -7,7 +8,7 @@ class LoginRequest(BaseModel):
     user: str
     passw: str
 
-class LoginResponse(BaseModel):
+class LoginResponse(TypedDict):
     success: bool
 
 # /api/register
@@ -15,14 +16,14 @@ class RegisterRequest(BaseModel):
     user: str
     passw: str
 
-class RegisterResponse(BaseModel):
+class RegisterResponse(TypedDict):
     success: bool
 
 # /api/user/public
 class PublicUserDataRequest(BaseModel):
     user_id: uuid.UUID
 
-class PublicUserDataResponse(BaseModel):
+class PublicUserDataResponse(TypedDict):
     username: str
     online: bool
 
@@ -30,7 +31,7 @@ class PublicUserDataResponse(BaseModel):
 class PrivateUserDataRequest(BaseModel):
     user_id: uuid.UUID
 
-class PrivateUserDataResponse(BaseModel):
+class PrivateUserDataResponse(TypedDict):
     user_id: uuid.UUID
     username: str
     online: bool
@@ -38,30 +39,52 @@ class PrivateUserDataResponse(BaseModel):
 
 # /api/opengames
 # GET
-class GetOpenGamesResponse(BaseModel):
-    games: list[dict[str, uuid.UUID | bool]]
+class GetOpenGamesResponse(TypedDict):
+    game_id: uuid.UUID
+    user_1_id: uuid.UUID
+    can_join: bool
 
 # POST
 class PostOpenGamesRequest(BaseModel):
     user1id: str
 
-class PostOpenGamesResponse(BaseModel):
+class PostOpenGamesResponse(TypedDict):
     success: bool
-    identity: uuid.UUID
+    game_id: uuid.UUID
 
 # /api/closedgames
+# GET
 class GetClosedGameRequest(BaseModel):
     player_id: uuid.UUID
 
-class GetClosedGameResponse(BaseModel):
-    uuid: uuid.UUID
-    user1uuid: uuid.UUID
-    user2uuid: uuid.UUID
+class GetClosedGameResponse(TypedDict):
+    game_id: uuid.UUID
+    user_1_id: uuid.UUID
+    user_2_id: uuid.UUID
     winner: uuid.UUID
     duration: timedelta
 
+# POST
 class PostClosedGameRequest(BaseModel):
     identity: uuid.UUID
+
+class PostClosedGameResponse(TypedDict):
+    success: bool
+
+# /api/friends
+class GetFriendsRequest(BaseModel):
+    user: uuid.UUID
+
+class GetFriendsResponse(TypedDict):
+    friends: list[{
+        "identity": uuid.UUID,
+
+    }]
+
+
+class NewMessageRequest(BaseModel):
+    recipient: str
+    message: str
 
 # db dtos
 class UserDetails(BaseModel):
@@ -90,10 +113,6 @@ class Friend(BaseModel):
     identity: str
     online: bool
     friendssince: str
-
-class NewMessageRequest(BaseModel):
-    recipient: str
-    message: str
 
 class MultiplexerMessage(BaseModel):
     game_id: uuid.UUID
