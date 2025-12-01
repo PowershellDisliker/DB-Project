@@ -3,13 +3,20 @@ import json
 BOARD_COLUMNS: int = 7
 BOARD_ROWS: int = 6
 
+class node:
+    connected: list[edgeNode]
+    Piece: Piece # will prolly need this for connecting only the nodes that are from the same player
+
+class edgeNode:
+    to: node
+    direction: int # could do 0 - 7 for the direction of the connection 1 at top left moving clockwise around
+
 class gameState:
     # object for sending data to the visulaizer in the front end
     # needs the board, player turn, if the game is running, who won
     board: ConnectFourBoard
     winner = -1 # -1 if game is still going
     turn = 0 # start wiht player 1
-
 
     def __init__(self, CurrentBoard):
         self.board = CurrentBoard
@@ -19,7 +26,7 @@ class gameState:
         if(turn == 0): 
             turn = 1    
         else:
-            turn = 0;
+            turn = 0
 
     def setWinner(self, outcome: int):
         # set the winner to correct player
@@ -75,13 +82,9 @@ class ConnectFourBoard:
         would need to keep track of the direction the the connection is made could prolly get it done with indexes"""
 
         return -1
+    
     def dfsWinner(positions: list[list[Piece]], moveCount: int):
         # should return true if a winner is found
-        # want to start at the position of the last move
-        # i dont think i need to make more than 4 moves per branch
-        if(moveCount > 4):
-            # didnt find a winning condition 
-            pass
 
         return 
 
