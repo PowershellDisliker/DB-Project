@@ -104,7 +104,7 @@ def run() -> FastAPI:
 
 
     @app.get("/api/opengames")
-    async def get_open_games(current_user: dict = Depends(get_current_user)) -> list[GetOpenGamesResponse]:
+    async def get_open_games(current_user: dict = Depends(get_current_user)) -> GetOpenGamesResponse:
         data = database.get_open_games()
 
         return [
@@ -179,19 +179,25 @@ def run() -> FastAPI:
     
 
     # WS endpoint
-    @app.websocket("/ws/game")
-    async def game_websocket(conn: WebSocket, game_id: str, current_user: dict = Depends(get_current_user)):
+    @app.websocket("/game/ws")
+    async def game_websocket(conn: WebSocket, current_user: dict = Depends(get_current_user)):
+        # Accept connection
         await conn.accept()
 
+        # Handle Disconnect
         try:
-            # creates game if it doesn't already and sends board state
-            conn.send_text(game_multiplexer.json_board_state(game_id))
+            # Pre-game setup
+            request: WebsocketGameRequest = json.loads(await conn.recieve_text())
+            await conn.send_text(game_multiplexer.json_board_state(request.game_id))
+
+            # Game-loop ws communication
             while True:
-                data = json.loads(await conn.recieve_text())
-                json_response = game_multiplexer.process_message(game_id, data)
-                conn.send_text(json_response)
+                command: WebsocketIncomingCommand = json.loads(await conn.recieve_text())
+                json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(request.game_id, command)
+                await conn.send_text(json_response)
         
         except WebSocketDisconnect:
+            # Cleanup
             print("Client disconnected")
 
     return app

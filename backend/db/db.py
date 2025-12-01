@@ -34,15 +34,15 @@ class DBClient:
 
         active_tokens = Table(
             'ActiveTokens', metadata,
-            Column('Token', String(32), primray_key=True),
-            Column('UserID', UUID, ForeignKey('users.id'))
+            Column('Token', String(32), primary_key=True),
+            Column('UserID', UUID, ForeignKey('Users.ID'))
         )
 
         open_games = Table(
             'OpenGames', metadata,
             Column('ID', UUID, primary_key=True),
-            Column('User1ID', UUID, ForeignKey('users.id')),
-            Column('User2ID', UUID, ForeignKey('users.id'), nullable=True),
+            Column('User1ID', UUID, ForeignKey('Users.ID')),
+            Column('User2ID', UUID, ForeignKey('Users.ID'), nullable=True),
             Column('StartTime', Integer, nullable=False)
         )
 
@@ -107,7 +107,8 @@ class DBClient:
 
         try:
             identity = uuid.uuid4()
-            self.__run_exec("INSERT INTO Users (ID, Username, PassHash) VALUES (:id, :uname, :passhash)", {"id": identity, "uname": user, "passhash": hashed})
+            self.__run_exec("INSERT INTO Users (ID, Username, PassHash, Online) VALUES (:id, :uname, :passhash, :online)",
+                {"id": identity, "uname": user, "passhash": hashed, "online": True})
             return identity
 
         except Exception as e:

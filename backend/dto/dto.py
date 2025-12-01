@@ -40,13 +40,16 @@ class PrivateUserDataResponse(TypedDict):
 # /api/opengames
 # GET
 class GetOpenGamesResponse(TypedDict):
-    game_id: uuid.UUID
-    user_1_id: uuid.UUID
-    can_join: bool
+    class InternalGame(TypedDict):
+        game_id: uuid.UUID
+        user_1_id: uuid.UUID
+        can_join: bool
+
+    games: list[InternalGame]
 
 # POST
 class PostOpenGamesRequest(BaseModel):
-    user1id: str
+    user_1_id: uuid.UUID
 
 class PostOpenGamesResponse(TypedDict):
     success: bool
@@ -72,19 +75,58 @@ class PostClosedGameResponse(TypedDict):
     success: bool
 
 # /api/friends
-class GetFriendsRequest(BaseModel):
+# GET
+class GetFriendRequest(BaseModel):
     user: uuid.UUID
 
-class GetFriendsResponse(TypedDict):
+class GetFriendResponse(TypedDict):
     friends: list[{
         "identity": uuid.UUID,
 
     }]
 
+# POST
+class PostFriendRequest(BaseModel):
+    ID1: uuid.UUID
+    ID2: uuid.UUID
 
-class NewMessageRequest(BaseModel):
+class PostFriendResponse(TypedDict):
+    success: bool
+
+# /api/message
+# GET
+class GetMessageRequest(BaseModel):
     recipient: str
     message: str
+
+class GetMessageResponse(TypedDict):
+    class InternalMessage(TypedDict):
+        sender_id: uuid.UUID
+        recipient_id: uuid.UUID
+        time_stamp: int
+        message: str
+
+    messages: list[InternalMessage]
+
+# POST
+class PostMessageRequest(BaseModel):
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
+    message: str
+
+class PostMessageResponse(TypedDict):
+    success: bool
+
+# Websocket Data Models
+class WebsocketGameRequest(BaseModel):
+    game_id: uuid.UUID
+
+class WebsocketIncomingCommand(BaseModel):
+    command_type: str
+
+class WebsocketOutgoingCommand(BaseModel):
+    command_type: str
+
 
 # db dtos
 class UserDetails(BaseModel):
