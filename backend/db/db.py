@@ -58,8 +58,8 @@ class DBClient:
         
         friends = Table(
             'Friends', metadata,
-            Column('ID1', UUID, ForeignKey('users.id')),
-            Column('ID2', UUID, ForeignKey('users.id')),
+            Column('ID1', UUID, ForeignKey('users.id'), nullable=False),
+            Column('ID2', UUID, ForeignKey('users.id'), nullable=False),
             Column('Accepted', Boolean, nullable=False)
         )
 
@@ -116,7 +116,7 @@ class DBClient:
             print(e)
             return None
 
-    
+
     def get_public_user(self, identity) -> Optional[PublicUserDetails]:
         result = self.__run_query("SELECT Username FROM Users WHERE ID = :identity", {"identity": identity})
 
@@ -155,7 +155,7 @@ class DBClient:
 
     def post_open_game(self, user1id: str) -> bool:
         result = self.__run_exec("INSERT INTO ActiveTokens (ID, User1ID, StartTime) VALUES (:id, :user1, :start)", 
-            {"id": uuid.uuid4(), "user1": user1id, "starttime": time.now()})
+            {"id": uuid.uuid4(), "user1": user1id, "start_time": time.now()})
 
         if result.rowcount <= 0:
             return False
@@ -175,11 +175,11 @@ class DBClient:
                 "user2id": current.user2id,
                 "starttime": current.starttime
             } 
-            for current in result ]
+            for current in result]
 
 
     def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID) -> bool:
-        query_result = self.__run_query("SELECT * FROM ActiveGames where ID = :id", {"id": game_id})
+        query_result = self.__run_query("SELECT * FROM OpenGames where ID = :id", {"id": game_id})
 
         if query_result is None:
             return False

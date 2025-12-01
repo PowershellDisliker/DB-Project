@@ -19,7 +19,7 @@ class ConnectFourBoard:
         self.player_2_id = p2_id
 
 
-    def drop_piece(self, piece_owner: int, piece_type: int, column: int) -> bool:
+    def drop_piece(self, piece_owner: int, column: int) -> bool:
         """
         Attempts to drop a connect 4 piece into the board at a specific column.
 
