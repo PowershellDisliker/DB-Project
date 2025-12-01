@@ -1,8 +1,9 @@
 import json
 import jwt
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, CursorResult
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, CursorResult, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
 
 from dto import LoginRequest, RegisterRequest, NewGameRequest
 from db import DBClient
@@ -13,7 +14,7 @@ def run() -> FastAPI:
     # Python services
     app = FastAPI()
     configuration = Config()
-    databse = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
+    database = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
     game_multiplexer = GameMultiplexer()
 
     # REMOVE IN PRODUCTION!!!
@@ -60,15 +61,12 @@ def run() -> FastAPI:
     # Login route, used by Login page
     @app.post("/api/login")
     async def login(request: LoginRequest) -> LoginResponse:
-        if request.user == "test" and request.passw == "test":
-            return LoginResponse(success=True)
-        return LoginResponse(success=False)
-
-        # Real return value, stubbed above.
-        success = database.login_user(self, request.user, request.passw)
+        # TODO Must return JWT here
+        success = database.validate_user(self, request.user, request.passw)
 
         return {
-            "success": success
+            "success": bool(success),
+            "token": jwt.encode({"user_id": success}, configuration.SECRET_KEY, configuration.JWT_ALGO) if success else None
         }
         
 
@@ -190,12 +188,14 @@ def run() -> FastAPI:
 
     # WS endpoint
     @app.websocket("/game/ws")
-    async def game_websocket(conn: WebSocket, current_user: dict = Depends(get_current_user)) -> None:
+    async def game_websocket(conn: WebSocket) -> None:
         # Accept connection
         await conn.accept()
 
         # Handle Disconnect
         try:
+            #TODO Handle authentication, no Depends()
+
             # Pre-game setup
             request: WebsocketGameRequest = json.loads(await conn.recieve_text())
             await conn.send_text(game_multiplexer.json_board_state(request.game_id))
@@ -204,7 +204,7 @@ def run() -> FastAPI:
             while True:
                 command: WebsocketIncomingCommand = json.loads(await conn.recieve_text())
                 json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(request.game_id, command)
-                await conn.send_text(json_response)
+                await conn.send_text(json.dumps(json_response))
         
         except WebSocketDisconnect:
             # Cleanup

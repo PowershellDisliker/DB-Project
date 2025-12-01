@@ -86,7 +86,7 @@ class DBClient:
             return conn.execute(text(query), params or {})
 
     # Specific data functions, these are what will be called in app.py
-    def validate_user(self, user: str, passw: str) -> bool:
+    def validate_user(self, user: str, passw: str) -> Optional[uuid.UUID]:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """

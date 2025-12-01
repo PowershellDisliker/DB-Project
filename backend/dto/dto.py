@@ -10,6 +10,7 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(TypedDict):
     success: bool
+    token: str
 
 # /api/register
 class RegisterRequest(BaseModel):
