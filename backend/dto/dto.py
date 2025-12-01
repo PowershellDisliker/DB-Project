@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import uuid
 
 # in-flight dtos
 class LoginRequest(BaseModel):
@@ -34,6 +35,12 @@ class ClosedGame(BaseModel):
     starttime: str
     endtime: str
     winner: str
+
+class ClosedGamePostRequest(BaseModel):
+    identity: uuid.UUID
+
+class ClosedGameGetRequest(BaseModel):
+    player_id: uuid.UUID
 
 class Friend(BaseModel):
     identity: str

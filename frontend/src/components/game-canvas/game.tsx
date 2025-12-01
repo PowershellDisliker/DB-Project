@@ -1,112 +1,136 @@
-import {useEffect, useRef, useState, useContext} from 'react';
+import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
 import { ConfigContext } from '../../config';
+import { Piece } from './game-vm';
 
-const HorizontalAspectRatio: number = 16;
-const VerticalAspectRatio: number = 9;
-const scale: number = 60;
-const margin: number = 100;
+// CONSTANTS MOVE TO CONFIG?
+const HorizontalAspectRatio = 16;
+const VerticalAspectRatio = 9;
+const scale = 60;
+const margin = 100;
+const gravity = 5;
+const timeScale = 1;
 
-const ROWS: number = 6;
-const COLS: number = 7;
+const ROWS = 6;
+const COLS = 7;
 
-const PIECE_RADIUS: number = 60;
+const PIECE_RADIUS = 30; // changed to make pieces smaller and easier to see
 
+// PROPS
 interface GameCanvasProps {
-    starting_player: string;
+  startingPlayer: string;
 }
 
-function GameCanvas({starting_player}: GameCanvasProps) {
-
-    // setup state
+// COMPONENT
+function GameCanvas({ startingPlayer }: GameCanvasProps) {
+    const config = useContext(ConfigContext);
+    
+    // State
     const [viewModel, setViewModel] = useState<SlowState>();
     const RealTimeState = useRef<RealTimeState>(null);
+
+    // sub-component references
     const ws = useRef<WebSocket>(null);
-    const Config = useContext(ConfigContext);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
-    // get user input and send it to backend
-    const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        // If it isn't our turn.
-        if (!viewModel?.current_player) return;
-
-        const x = e.clientX;
-
-        // clicked out of bounds
-        if (x < margin / 2 || x > margin / 2 + (e.currentTarget.width - margin)) return;
-
-        const ColumnWidth = (e.currentTarget.width - margin) / COLS;
-        const piece_col = Math.floor((x - (margin / 2)) / ColumnWidth);
-
-        const message = {
-            "type": "drop_piece",
-            "player": RealTimeState.current!.current_player,
-            "column": piece_col,
-        }
-
-        ws.current!.send(JSON.stringify(message));
-    }
-
-    // animation effect
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+    if (!canvasRef.current) return;
 
-        const GC = canvas.getContext('2d');
-        if (!GC) return;
+    const gc = canvasRef.current.getContext('2d');
+    if (!gc) return;
 
-        const ImageMask = new Image();
-        ImageMask.src = "../../../public/board-mask.png";
+    const imageMask = new Image();
+    imageMask.src = '../../../public/board-mask.png';
 
-        const drawFrame = () => {
-            // clear the canvas
-            GC.clearRect(0, 0, canvas.width, canvas.height);
+    // TODO remove test pieces
+    let pieces: Piece[] = [
+        new Piece(0, 0, "black"),
+        new Piece(0, 1, "red"),
+        new Piece(0, 2, "black"),
+    ];
 
-            // Draw all the pieces
-            RealTimeState.current!.pieces.forEach(() => {
-                GC.beginPath();
-                GC.arc(piece.x_pos, piece.y_pos, 30, 0, Math.PI * 2);
-                GC.fillStyle = "black";
-                GC.fill();
-            })
+    const drawFrame = () => {
+      gc.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
 
+      // Draw and update all the pieces
+      pieces.forEach((piece) => {
+        gc.beginPath();
+        gc.arc(piece.col * 80, piece.yPos, PIECE_RADIUS, 0, Math.PI * 2);
+        gc.fillStyle = piece.color;
+        gc.fill();
 
-            GC.drawImage(ImageMask, 0, 0);
+        piece.yPos += piece.dy * timeScale;
+        
+        piece.dy -= gravity * timeScale;
+
+        if (piece.yPos > piece.row * 80 && piece.dy > 0) piece.dy *= -1;
+      });
+    //   gc.drawImage(imageMask, 0, 0);
+
             requestAnimationFrame(drawFrame);
-        }
+    };
 
-        requestAnimationFrame(drawFrame);
-    }, [])
-
-    // websocket effect
-    useEffect(() => {
-        ws.current = new WebSocket(Config!.BACKEND_WS_URL!);
-
-        // message structure: 
-        ws.current.addEventListener("message", (message: MessageEvent) => {
-            let json_data = JSON.parse(message.data);
-
-            switch (json_data["type"]) {
-                case "add_piece":
-                
-                break;
-
-                case "board_state":
-                
-                break;
-            }
-        })
-
-        ws.current.addEventListener("close", (closeEvent: CloseEvent) => {
-            console.log("Disconnected from ws backend");
-        })
-
+    let animationID = requestAnimationFrame(drawFrame);
         return () => {
-            ws.current?.close();
-        }
-    }, [])
+      cancelAnimationFrame(animationID);
+    };
+  }, []);
 
-    return <canvas width={HorizontalAspectRatio * scale} height={VerticalAspectRatio * scale} ref={canvasRef} onClick={canvasClickHandler}/>
+  useEffect(() => {
+    ws.current = new WebSocket(config!.BACKEND_WS_URL!);
+
+    ws.current.addEventListener('message', (message) => {
+      const jsonData = JSON.parse(message.data);
+
+      switch (jsonData.type) {
+        case 'add_piece':
+          // update pieces array
+          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, "black"));
+          break;
+
+        case 'board_state':
+          // update visual state here
+          setViewModel(jsonData.newBoardState);
+          break;
+}
+    });
+
+    ws.current.addEventListener('close', (event) => {
+      console.log('Disconnected from ws backend');
+    });
+
+    return () => {
+      ws.current?.close();
+    };
+  }, []);
+
+  const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!viewModel?.currentPlayer) return;
+
+    const x = e.clientX;
+
+    if (x < margin / 2 || x > margin / 2 + (canvasRef.current!.width - margin)) return;
+
+    const columnWidth = (canvasRef.current!.width - margin) / COLS;
+    const pieceCol = Math.floor((x - (margin / 2)) / columnWidth);
+
+    const message = {
+      type: 'drop_piece',
+      player: RealTimeState.current!.currentPlayer,
+      column: pieceCol,
+    };
+
+    ws.current?.send(JSON.stringify(message));
+  };
+
+  return (
+    <canvas
+      width={HorizontalAspectRatio * scale}
+      height={VerticalAspectRatio * scale}
+      ref={canvasRef}
+      onClick={canvasClickHandler}
+    />
+  );
 }
 
 export default GameCanvas;

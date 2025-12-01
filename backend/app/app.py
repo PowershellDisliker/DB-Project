@@ -72,9 +72,14 @@ def run() -> FastAPI:
 
     
     # DB routes (Need to be protected still)
-    @app.get("/api/user/{user_id}")
+    @app.get("/api/user/public/{user_id}")
+    async def public_user_data(user_id: str, current_user: dict = Depends(get_current_user)):
+        return database.get_public_user(user_id)
+
+
+    @app.get("/api/user/private/{user_id}")
     async def get_user_data(user_id: str, current_user: dict = Depends(get_current_user)):
-        return database.get_user_details(user_id)
+        return database.get_private_user(user_id)
 
 
     @app.get("/api/opengames")
@@ -82,9 +87,29 @@ def run() -> FastAPI:
         return database.get_open_games()
 
     
-    @app.post("/api/creategame")
+    @app.post("/api/opengames")
     async def create_new_game(request: NewGameRequest, current_user: dict = Depends(get_current_user)):
-        return {identity: database.create_open_game()}
+        return {identity: database.post_open_game()}
+
+
+    @app.get("/api/closedgames")
+    async def get_closed_games(request: ClosedGameGetRequest, current_user: dict = Depends(get_current_user)):
+        return {games: database.get_closed_games()}
+
+
+    @app.post("/api/closedgames")
+    async def create_closed_game(request: ClosedGamePostRequest, current_user: dict = Depends(get_current_user)):
+        return {"success": database.post_closed_game(request.identity)}
+
+    
+    @app.get("/api/friends")
+    async def get_friends(request: FriendsGetRequest, current_user: dict = Depends(get_current_user)):
+        return {"friends": database.get_friends()}
+
+    
+    @app.post("/api/friends")
+    async def post_friends(request FriendsPostRequest, current_user: dict = Depends(get_current_user)):
+        return {"success": database.post_friend()}
 
     
     @app.get("/api/messages")
@@ -98,7 +123,7 @@ def run() -> FastAPI:
     
 
     # WS endpoint
-    @app.websocket("/ws/game/{game_id}")
+    @app.websocket("/ws/game")
     async def game_websocket(conn: WebSocket, game_id: str, current_user: dict = Depends(get_current_user)):
         await conn.accept()
 
