@@ -1,6 +1,6 @@
 import json
 import jwt
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, CursorResult
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 
@@ -48,7 +48,9 @@ def run() -> FastAPI:
             if identity is None:
                 raise credentials_exception
 
-            return {"id": identity}
+            return {
+                "user_id": identity
+            }
 
         except JWTError:
             raise credentials_exception
@@ -83,7 +85,7 @@ def run() -> FastAPI:
     # DB routes
     @app.get("/api/user/public")
     async def public_user_data(request: PublicUserDataRequest, current_user: dict = Depends(get_current_user)) -> PublicUserDataResponse:
-        data = database.get_public_user(user_id)
+        data = database.get_public_user(request.user)
 
         return {
             "username": data.Username,
@@ -169,18 +171,31 @@ def run() -> FastAPI:
 
     
     @app.get("/api/messages")
-    async def get_messages(current_user: dict = Depends(get_current_user)):
-        return database.get_messages(user_id)
+    async def get_messages(request: GetMessagesRequest, current_user: dict = Depends(get_current_user)) -> GetMessageResponse:
+        data = database.get_messages(rquest.recipient_id, request.sender_id)
+        
+        return [
+            {
+                "sender_id": d.ID,
+                "timestamp": d.TimeStamp,
+                "Message": d.Message
+            }
+            for d in data
+        ]
 
     
     @app.post("/api/messages")
-    async def send_message(request: NewMessageRequest, current_user: dict = Depends(get_current_user)):
-        return {"success": database.send_message(current_user['id'], request.recipient, request.message)}
+    async def send_message(request: PostMessageRequest, current_user: dict = Depends(get_current_user)) -> PostMessageResponse:
+        data = database.post_message(current_user['identity'], request.recipient, request.message)
+
+        return {
+            "success": data.success
+        }
     
 
     # WS endpoint
     @app.websocket("/game/ws")
-    async def game_websocket(conn: WebSocket, current_user: dict = Depends(get_current_user)):
+    async def game_websocket(conn: WebSocket, current_user: dict = Depends(get_current_user)) -> None:
         # Accept connection
         await conn.accept()
 

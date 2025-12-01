@@ -77,7 +77,7 @@ class PostClosedGameResponse(TypedDict):
 # /api/friends
 # GET
 class GetFriendRequest(BaseModel):
-    user: uuid.UUID
+    user_id: uuid.UUID
 
 class GetFriendResponse(TypedDict):
     friends: list[{
@@ -96,13 +96,13 @@ class PostFriendResponse(TypedDict):
 # /api/message
 # GET
 class GetMessageRequest(BaseModel):
-    recipient: str
-    message: str
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
+
 
 class GetMessageResponse(TypedDict):
     class InternalMessage(TypedDict):
-        sender_id: uuid.UUID
-        recipient_id: uuid.UUID
+        message_id: uuid.UUID
         time_stamp: int
         message: str
 

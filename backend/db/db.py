@@ -59,7 +59,8 @@ class DBClient:
         friends = Table(
             'Friends', metadata,
             Column('ID1', UUID, ForeignKey('users.id')),
-            Column('ID2', UUID, ForeignKey('users.id'))
+            Column('ID2', UUID, ForeignKey('users.id')),
+            Column('Accepted', Boolean, nullable=False)
         )
 
         messages = Table(
@@ -226,7 +227,7 @@ class DBClient:
 
 
     def get_friends(self, identity: uuid.UUID) -> list[Friend]:
-        result = self.__un_query("SELECT * FROM Friends WHERE ID1 = :id OR ID2 = :id", {"id": identity})
+        result = self.__run_query("SELECT * FROM Friends WHERE ID1 = :id OR ID2 = :id", {"id": identity})
 
         if result is None:
             return None
@@ -239,10 +240,9 @@ class DBClient:
             {"id": uuid.uuid4(), "ts": time.now(), "si": sender, "ri": recipient, "m": message}
         )
 
-        if result is None:
-            return None
-
-        return result
+        if result.rows_affected <= 0:
+            return False
+        return True
 
 
     def get_messages(self, inbox_owner: uuid.UUID, external_contact: uuid.UUID) -> list[Message]:
