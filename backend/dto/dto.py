@@ -3,22 +3,6 @@ from typing import TypedDict
 import uuid
 
 # in-flight dtos
-# /api/login
-class LoginRequest(BaseModel):
-    user: str
-    passw: str
-
-class LoginResponse(TypedDict):
-    success: bool
-    token: str
-
-# /api/register
-class RegisterRequest(BaseModel):
-    user: str
-    passw: str
-
-class RegisterResponse(TypedDict):
-    success: bool
 
 # /api/user/public
 class PublicUserDataRequest(BaseModel):
