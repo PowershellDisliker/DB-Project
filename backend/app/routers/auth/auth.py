@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from dto import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse
 
 
 router = APIRouter()

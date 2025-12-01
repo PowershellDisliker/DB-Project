@@ -57,12 +57,15 @@ def run() -> FastAPI:
         except JWTError:
             raise credentials_exception
 
+    # Routes
     app.include_router(auth_router, prefix="/api/auth")
     app.include_router(closedgame_router, prefix="/api/closedgame")
     app.include_router(friend_router, prefix="/api/friend")
     app.include_router(message_router, prefix="/api/message")
     app.include_router(opengame_router, prefix="/api/opengame")
     app.include_router(user_router, prefix="/api/user")
+
+    # Websocket Route
     app.include_router(ws_router, prefix="/ws")
     
 
