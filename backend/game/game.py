@@ -44,7 +44,7 @@ class gameState:
         self.board = jsonDict["board"]
 
 class Piece:
-    owner_number: int
+    owner_number: int | None
     piece_type: int
     def __init__(self, player: int, type: int):
         self.owner_number = player

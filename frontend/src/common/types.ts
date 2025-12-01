@@ -1,6 +1,6 @@
 interface UserDetails {
     username: string;
-    account_created: Date;
+    account_created: string;
     total_wins: number;
     total_losses: number;
 }
@@ -18,4 +18,8 @@ interface PreviousGameProps {
     id: string;
 }
 
-export type {FriendProps, OpenGameProps, PreviousGameProps, UserDetails};
+interface LoginAttempt {
+    success: boolean;
+}
+
+export type {FriendProps, OpenGameProps, PreviousGameProps, UserDetails, LoginAttempt};
