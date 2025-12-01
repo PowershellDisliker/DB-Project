@@ -34,8 +34,8 @@ class DBClient:
 
         active_tokens = Table(
             'ActiveTokens', metadata,
-            Column('Token', String(32), primary_key=True),
-            Column('UserID', UUID, ForeignKey('Users.ID'))
+            Column('UserID', UUID, ForeignKey('Users.ID'), primary_key=True),
+            Column('Token', String(32))
         )
 
         open_games = Table(
@@ -157,7 +157,7 @@ class DBClient:
         result = self.__run_exec("INSERT INTO ActiveTokens (ID, User1ID, StartTime) VALUES (:id, :user1, :start)", 
             {"id": uuid.uuid4(), "user1": user1id, "starttime": time.now()})
 
-        if not result:
+        if result.rowcount <= 0:
             return False
         return True
 
@@ -207,14 +207,16 @@ class DBClient:
         if result is None:
             return None
 
-        return [{
-            "identity": instance.identity,
-            "user1id": instance.user1id,
-            "user2id": instance.user2id,
-            "starttime": instance.starttime,
-            "endtime": instance.endtime,
-            "winner": instance.winner,
-        } for instance in result]
+        return [
+            {
+                "identity": instance.identity,
+                "user1id": instance.user1id,
+                "user2id": instance.user2id,
+                "starttime": instance.starttime,
+                "endtime": instance.endtime,
+                "winner": instance.winner,
+            } 
+        for instance in result]
 
 
     def post_friend(self, user1id: uuid.UUID, user2id: uuid.UUID) -> bool:

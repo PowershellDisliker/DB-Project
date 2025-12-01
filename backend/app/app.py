@@ -120,16 +120,11 @@ def run() -> FastAPI:
 
     
     @app.post("/api/opengames")
-    async def create_new_game(request: PostOpenGamesRequest, current_user: dict = Depends(get_current_user)) -> PostOpenGamesResponse:
-        data = database.post_open_game()
-
-        success = True
-
-        if data is not None:
-            success = False
+    async def create_new_game(current_user: dict = Depends(get_current_user)) -> PostOpenGamesResponse:
+        data = database.post_open_game(current_user["user_id"])
 
         return {
-            "success": success,
+            "success": True,
             "game_id": data.ID
         }
 

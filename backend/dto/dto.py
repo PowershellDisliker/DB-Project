@@ -48,9 +48,6 @@ class GetOpenGamesResponse(TypedDict):
     games: list[InternalGame]
 
 # POST
-class PostOpenGamesRequest(BaseModel):
-    user_1_id: uuid.UUID
-
 class PostOpenGamesResponse(TypedDict):
     success: bool
     game_id: uuid.UUID
@@ -128,34 +125,43 @@ class WebsocketOutgoingCommand(BaseModel):
     command_type: str
 
 
-# db dtos
-class UserDetails(BaseModel):
-    identity: str
+# db -> backend vice versa models
+class DB_User(BaseModel):
+    user_id: uuid.UUID
     username: str
+    pass_hash: str
+    online: bool
 
-class Token(BaseModel):
-    owner: str
+class DB_Token(BaseModel):
+    owner: uuid.UUID
     token: str
 
-class OpenGame(BaseModel):
-    identity: str
-    user1id: str
-    user2id: str | None
-    starttime: str
+class DB_OpenGame(BaseModel):
+    game_id: uuid.UUID
+    user_1_id: uuid.UUID
+    user_2_id: uuid.UUID | None
+    start_time: int
 
-class ClosedGame(BaseModel):
-    identity: str
-    user1id: str
-    user2id: str
-    starttime: str
-    endtime: str
-    winner: str
+class DB_ClosedGame(BaseModel):
+    game_id: uuid.UUID
+    user_1_id: uuid.UUID
+    user_2_id: uuid.UUID
+    start_time: int
+    end_time: int
+    winner: uuid.UUID
 
-class Friend(BaseModel):
-    identity: str
-    online: bool
-    friendssince: str
+class DB_Friend(BaseModel):
+    friend_id: uuid.UUID
+    accepted: bool
 
+class DB_Message(BaseModel):
+    message_id: uuid.UUID
+    time_stamp: int
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
+    message: str
+
+# Multiplexer DTOs
 class MultiplexerMessage(BaseModel):
     game_id: uuid.UUID
     request_type: str
