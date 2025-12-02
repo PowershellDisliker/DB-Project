@@ -6,3 +6,4 @@ from .message import *
 from .opengame import *
 from .user import *
 from .ws import *
+from .game import *
