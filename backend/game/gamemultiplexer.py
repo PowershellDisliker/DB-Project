@@ -1,19 +1,20 @@
-from .game import ConnectFourBoard
+from game import ConnectFourBoard
 from typing import dict, Optional
-from .dto import *
+from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest
 import uuid
 
 class GameMultiplexer:
     games: dict[uuid.UUID, ConnectFourBoard] = {}
 
-    def json_board_state(game_id: uuid.UUID) -> str:
-        if games[game_id]:
-            return games[game_id].json_board_state()
+    def create_or_load(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> str:
+        return self.games.setdefault(request.game_id, ConnectFourBoard())
 
 
-    def process_message(request: MultiplexerMessage) -> bool:
-        if request.game_id not in games:
-            return False
+    def process_message(self, request: WebsocketIncomingCommand) -> WebsocketOutgoingCommand:
+        if request.game_id not in self.games:
+            return WebsocketOutgoingCommand(
+                type="error"
+            )
 
         relevant_game = games[request.game_id]
 

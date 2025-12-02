@@ -26,6 +26,9 @@ async def game_websocket(conn: WebSocket, config: Config = Depends(get_config), 
 
         try:
             payload = jwt.decode(initial_request.jwt, config.SECRET_KEY, algorithms=[config.JWT_ALGO])
+            
+            # Load or create game and send board
+            await conn.send_text(game_multiplexer.json_board_state(initial_request, payload.get('su')))
 
         except jwt.InvalidTokenError:
             print("Invalid JWT")
@@ -33,13 +36,12 @@ async def game_websocket(conn: WebSocket, config: Config = Depends(get_config), 
             await conn.close()
             return
 
-        await conn.send_text(game_multiplexer.json_board_state(initial_request.game_id))
 
         # Game-loop ws communication
         while True:
             msg = await conn.receive_text()
             command: WebsocketIncomingCommand = WebsocketIncomingCommand(**json.loads(msg))
-            json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(initial_request.game_id, command)
+            json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(command)
             await conn.send_text(json_response.json())
     
     except WebSocketDisconnect:
