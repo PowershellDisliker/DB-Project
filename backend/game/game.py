@@ -1,6 +1,5 @@
 from typing import Tuple
 from dto import BoardState
-import json
 import uuid
 
 # Holup
@@ -32,6 +31,7 @@ class ConnectFourBoard:
             self.user_2_id = user_id
             return True
         return False
+
 
     def drop_piece(self, piece_owner: uuid.UUID, col: int) -> Tuple[bool, uuid.UUID | None]:
         """
@@ -85,8 +85,16 @@ class ConnectFourBoard:
             user_1_id=self.user_1_id,
             user_2_id=self.user_2_id,
             positions=self.positions,
-            current_player=self.active_player
+            active_player=self.active_player
         )
+
+
+    def get_players(self) -> Tuple[uuid.UUID | None, uuid.UUID | None]:
+        return (self.user_1_id, self.user_2_id)
+
+
+    def get_active_player(self) -> uuid.UUID | None:
+        return self.active_player
 
 
     def __get_index(self, row: int, col: int) -> int:
