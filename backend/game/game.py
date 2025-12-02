@@ -1,53 +1,147 @@
-import json
+from typing import Tuple
+from dto import BoardState
+import uuid
 
-BOARD_COLUMNS: int = 7
-BOARD_ROWS: int = 6
-
-class Piece:
-    owner_number: int | None
-    piece_type: int
-    
+# Holup
+ROW_COUNT: int = 6
+COL_COUNT: int = 7
 
 class ConnectFourBoard:
-    player_1_id: int
-    player_2_id: int
-    positions: list[list[Piece]] = [Piece(None, 0) * BOARD_ROWS for _ in range(BOARD_COLUMNS)]
+    def __init__(self, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> None:
+        self.user_1_id: uuid.UUID | None = user_1_id
+        self.user_2_id: uuid.UUID | None = user_2_id
 
-    
-    def __init__(self, p1_id: int, p2_id: int) -> None:
-        self.player_1_id = p1_id
-        self.player_2_id = p2_id
+        self.active_player: uuid.UUID | None = user_1_id
+
+        self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 
 
-    def drop_piece(self, piece_owner: int, piece_type: int, column: int) -> bool:
+    def register_player(self, user_id: uuid.UUID) -> bool:
+        if self.user_1_id == user_id or self.user_2_id == user_id:
+            return False
+
+        if self.user_1_id is None:
+            self.user_1_id = user_id
+
+            if self.active_player is None:
+                self.active_player = user_id
+            return True
+
+        if self.user_2_id is None:
+            self.user_2_id = user_id
+            return True
+        return False
+
+
+    def drop_piece(self, piece_owner: uuid.UUID, col: int) -> Tuple[bool, uuid.UUID | None]:
         """
         Attempts to drop a connect 4 piece into the board at a specific column.
 
-        Returns true if possible and successful, false otherwise.
+        Returns true if possible and successful, false otherwise, and the UUID of the winner if there is one.
         """
-        if column < 0 or column >= BOARD_COLUMNS:
-            return False
+        # Only allow if both players are present
+        if self.user_1_id is None or self.user_2_id is None:
+            return (False, None)
+
+        # If the player placing the piece isn't currently in the game
+        if piece_owner != self.user_1_id and piece_owner != self.user_2_id:
+            return (False, None)
+
+        # If we're outside of the bounds
+        if col < 0 or col >= COL_COUNT:
+            return (False, None)
+
+        # If the active player isn't the piece_owner
+        if self.active_player != piece_owner:
+            return (False, None)
+
+        last_available_row = None
+        
+        # Get the available row
+        for row in reversed(range(ROW_COUNT)):
+            if self.positions[self.__get_index(row, col)] is None:
+                last_available_row = row
+                break
+
+        # Return if column is full
+        if last_available_row is None:
+            return (False, None)
+
+        # Place the piece
+        new_piece_index: int = self.__get_index(last_available_row, col)
+        self.positions[new_piece_index] = piece_owner
+
+        # Check for winner and return
+        winner = self.__check_for_winner(new_piece_index)
+
+        if winner is None:
+            self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
+            return (True, None)
+        return (True, winner)
 
 
-    def json_board_state() -> str:
-        return json.dumps(positions)
+    def get_board_state(self) -> BoardState:
+        return BoardState(
+            user_1_id=self.user_1_id,
+            user_2_id=self.user_2_id,
+            positions=self.positions,
+            active_player=self.active_player
+        )
 
 
-    def check_for_winner(self) -> int:
+    def get_players(self) -> Tuple[uuid.UUID | None, uuid.UUID | None]:
+        return (self.user_1_id, self.user_2_id)
+
+
+    def get_active_player(self) -> uuid.UUID | None:
+        return self.active_player
+
+
+    def __get_index(self, row: int, col: int) -> int:
+        return row * COL_COUNT + col
+
+
+    def __check_for_winner(self, recent_piece_index: int) -> uuid.UUID | None:
         """
-        Checks the board to see if there is a winner, returns the winner's player number
-        if there is a winner or -1 if there is not currently a winner.
+        returns winner's uuid if there is a winner, or None if there isn't
         """
 
-        return -1
+        def check_col() -> uuid.UUID | None:
+            pass
+
+        def check_row() -> uuid.UUID | None:
+            pass
+
+        def check_dia() -> uuid.UUID | None:
+            pass
+
+        col_winner = check_col()
+        row_winner = check_row()
+        dia_winner = check_dia()
+
+        if col_winner:
+            return col_winner
+
+        if row_winner:
+            return row_winner
+        
+        if dia_winner:
+            return dia_winner
+        return None
 
 
-    def print_board(self) -> None:
+    def __print_board(self) -> None:
         """
         low-level visual representation of the current board state for debugging
         """
-        for row in self.positions:
-            for value in row:
-                print(value.owner_number, end=" ")
+
+        for row in range(ROW_COUNT):
+            for col in range(COL_COUNT):
+                val = self.positions[self.__get_index(row, col)]
+
+                if val is None:
+                    print("0", end=" ")
+                else:
+                    print("1" if val == self.user_1_id else "2", end=" ")
             print()
         
