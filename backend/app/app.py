@@ -1,6 +1,5 @@
-import json
 import jwt
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, CursorResult, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 
@@ -34,10 +33,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 # Strips authenitcation header for jwt and returns current users id
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> HTTPException | uuid.UUID:
 
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
+        status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -48,11 +47,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.InvalidTokenError:
         raise credentials_exception
         
-    identity: str = payload.get("su")
+    identity: uuid.UUID = uuid.UUID(payload.get("su"))
 
-    return DB_User(
-        user_id=identity
-    )
+    return identity
 
 
 def get_db() -> DBClient:

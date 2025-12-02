@@ -2,8 +2,8 @@ from .auth import *
 from .closedgame import *
 from .db import *
 from .friend import *
+from .game import *
 from .message import *
 from .opengame import *
 from .user import *
 from .ws import *
-from .game import *

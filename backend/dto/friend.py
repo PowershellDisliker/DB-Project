@@ -1,10 +1,11 @@
 from pydantic import BaseModel
+from typing import Tuple
 import uuid
 
 # /api/friends
 # GET
 class GetFriendResponse(BaseModel):
-    friend_ids: list[uuid.UUID] | None
+    friend_ids: list[Tuple[uuid.UUID, bool]] | None
 
 # POST
 class PostFriendRequest(BaseModel):

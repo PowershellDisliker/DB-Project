@@ -48,6 +48,10 @@ class GameMultiplexer:
         return self.__get_board_state_response(request.game_id)
 
 
+    def disconnect(self, game_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        pass
+
+
     def process_message(self, request: WebsocketIncomingCommand) -> WebsocketOutgoingCommand:
         match request.command_type:
             case "drop_piece":

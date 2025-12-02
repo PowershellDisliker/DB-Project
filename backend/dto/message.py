@@ -1,9 +1,10 @@
 from pydantic import BaseModel
+from datetime import datetime
 import uuid
 
 class Message(BaseModel):
     message_id: uuid.UUID
-    time_stamp: int
+    time_stamp: datetime
     message: str
 
 # /api/message

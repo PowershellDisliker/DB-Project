@@ -160,7 +160,7 @@ class DBClient:
 
 
     def get_private_user(self, user_id: uuid.UUID) -> DB_User | None:
-        result = self.__run_query("SELECT Username, PassHash, Online FROM Users WHERE ID = :identity", {"identity": identity})
+        result = self.__run_query("SELECT Username, PassHash, Online FROM Users WHERE ID = :identity", {"identity": user_id})
 
         if not result:
             return None
@@ -173,8 +173,8 @@ class DBClient:
         )
 
 
-    def post_token(self, user_id: str, token: str) -> bool:
-        result = self.__run_exec("INSERT INTO ActiveTokens (Token, UserID) VALUES (:token, :user)", {"token": token, "user": identity})
+    def post_token(self, user_id: uuid.UUID, token: str) -> bool:
+        result = self.__run_exec("INSERT INTO ActiveTokens (Token, UserID) VALUES (:token, :user)", {"token": token, "user": user_id})
 
         if result.rowcount <= 0:
             return False
@@ -182,18 +182,18 @@ class DBClient:
 
 
     def get_token(self, user_id: uuid.UUID, token: str) -> bool:
-        result = self.__run_query("SELECT * FROM ActiveTokens WHERE UserID = :id AND Token = :tok", {"id": identity, "tok": token})
+        result = self.__run_query("SELECT * FROM ActiveTokens WHERE UserID = :id AND Token = :tok", {"id": user_id, "tok": token})
 
         if not result:
             return False
         return True
 
 
-    def post_open_game(self, user_1_id: str) -> DB_OpenGame | None:
+    def post_open_game(self, user_1_id: uuid.UUID) -> DB_OpenGame | None:
         game_id = uuid.uuid4()
 
         result = self.__run_exec("INSERT INTO OpenGames (ID, User1ID) VALUES (:id, :user1)", 
-            {"id": game_id, "user1": user1id})
+            {"id": game_id, "user1": user_1_id})
 
         if result.rowcount <= 0:
             return None
@@ -232,13 +232,20 @@ class DBClient:
         )
 
         if insert_result.rowcount <= 0:
-            return False
+            return None
 
         delete_result = self.__run_exec("DELETE FROM OpenGames WHERE ID = :id", {"id": game_id})
 
         if delete_result.rowcount <= 0:
-            return False
-        return True
+            return None
+
+        return DB_ClosedGame(
+            game_id=result[0].ID,
+            user_1_id=result[0].User1ID,
+            user_2_id=result[0].User2ID,
+            start_time=result[0].StartTime,
+            winner=winner_id
+        )
 
 
     def get_closed_games(self, identity: str) -> list[DB_ClosedGame] | None:

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 import uuid
 
 # db -> backend vice versa models
@@ -17,14 +18,14 @@ class DB_OpenGame(BaseModel):
     game_id: uuid.UUID | None = None
     user_1_id: uuid.UUID | None = None
     user_2_id: uuid.UUID | None = None
-    start_time: int | None = None
+    start_time: datetime | None = None
 
 class DB_ClosedGame(BaseModel):
     game_id: uuid.UUID | None = None
     user_1_id: uuid.UUID | None = None
     user_2_id: uuid.UUID | None = None
-    start_time: int | None = None
-    end_time: int | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     winner: uuid.UUID | None = None
 
 class DB_Friend(BaseModel):
@@ -33,7 +34,7 @@ class DB_Friend(BaseModel):
 
 class DB_Message(BaseModel):
     message_id: uuid.UUID | None = None
-    time_stamp: int | None = None
+    time_stamp: datetime | None = None
     sender_id: uuid.UUID | None = None
     recipient_id: uuid.UUID | None = None
     message: str | None = None
