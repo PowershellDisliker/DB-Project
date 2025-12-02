@@ -3,7 +3,6 @@ import jwt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, CursorResult, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
 
 from app.routers import auth_router, closedgame_router, friend_router, message_router, opengame_router, user_router, ws_router
 from dto import *
@@ -44,19 +43,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     )
 
     try:
-        payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=["HS256"])
-        identity: str = payload.get("id")
+        payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=[configuration.JWT_ALGO])
 
-        if not database.validate_user():
-            return credentials_exception
-
-
-        return DB_User(
-            user_id=identity
-        )
-
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise credentials_exception
+        
+    identity: str = payload.get("su")
+
+    return DB_User(
+        user_id=identity
+    )
 
 
 def get_db() -> DBClient:
@@ -67,13 +63,17 @@ def get_config() -> Config:
     return configuration
 
 
+def get_multiplexer() -> GameMultiplexer:
+    return game_multiplexer
+
+
 # Routes
-app.include_router(auth_router, prefix="/api/auth")
-app.include_router(closedgame_router, prefix="/api/closedgame")
-app.include_router(friend_router, prefix="/api/friend")
-app.include_router(message_router, prefix="/api/message")
-app.include_router(opengame_router, prefix="/api/opengame")
-app.include_router(user_router, prefix="/api/user")
+app.include_router(auth_router, prefix="/api")
+app.include_router(closedgame_router, prefix="/api")
+app.include_router(friend_router, prefix="/api")
+app.include_router(message_router, prefix="/api")
+app.include_router(opengame_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
 
 # Websocket Route
 app.include_router(ws_router, prefix="/ws")

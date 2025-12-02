@@ -5,6 +5,7 @@ class Config:
     SECRET_KEY: str
     POSTGRES_URL: str
     POSTGRES_DB_NAME: str
+    JWT_ALGO: str
 
     def __init__(self) -> None:
         # Load the file
@@ -14,6 +15,7 @@ class Config:
         self.SECRET_KEY = os.getenv("SECRET_KEY")
         self.POSTGRES_URL = os.getenv("POSTGRES_URL")
         self.POSTGRES_DB_NAME = os.getenv("POSTGRES_DB_NAME")
+        self.JWT_ALGO = os.getenv("JWT_ALGO")
 
         # Check for presence of required variables
         self.__check_required()
@@ -23,7 +25,8 @@ class Config:
         required = [
             self.SECRET_KEY,
             self.POSTGRES_URL,
-            self.POSTGRES_DB_NAME
+            self.POSTGRES_DB_NAME,
+            self.JWT_ALGO
         ]
 
         for value in required:

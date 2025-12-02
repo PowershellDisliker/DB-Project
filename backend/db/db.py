@@ -116,7 +116,7 @@ class DBClient:
             user_id=result[0].ID,
             username=result[0].Username,
         )
-
+        
 
     def post_user(self, user: str, passw: str) -> DB_User | None:
         """
@@ -197,7 +197,7 @@ class DBClient:
 
         if result.rowcount <= 0:
             return None
-            
+
         return DB_OpenGame(
             game_id=game_id,
             user_1_id=user_1_id

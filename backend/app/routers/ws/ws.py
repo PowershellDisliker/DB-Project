@@ -1,27 +1,50 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from config import Config
+from db import DBClient
+from app import get_config, get_multiplexer
+from game import GameMultiplexer
+from dto import WebsocketGameRequest, WebsocketIncomingCommand, WebsocketOutgoingCommand
+import jwt
+import json
 
 router = APIRouter()
 
 # WS endpoint
-@router.websocket("/game/ws")
-async def game_websocket(conn: WebSocket) -> None:
+@router.websocket("/ws")
+async def game_websocket(conn: WebSocket, config: Config = Depends(get_config), game_multiplexer: GameMultiplexer = Depends(get_multiplexer)) -> None:
+    payload = None
+    initial_request = None
+    
     # Accept connection
     await conn.accept()
 
     # Handle Disconnect
     try:
-        #TODO Handle authentication, no Depends()
-
         # Pre-game setup
-        request: WebsocketGameRequest = json.loads(await conn.recieve_text())
-        await conn.send_text(game_multiplexer.json_board_state(request.game_id))
+        msg = await conn.receive_text()
+        initial_request: WebsocketGameRequest = WebsocketGameRequest(**json.loads(msg))
+
+        try:
+            payload = jwt.decode(initial_request.jwt, config.SECRET_KEY, algorithms=[config.JWT_ALGO])
+
+        except jwt.InvalidTokenError:
+            print("Invalid JWT")
+            await conn.send_text("INVALID")
+            await conn.close()
+            return
+
+        await conn.send_text(game_multiplexer.json_board_state(initial_request.game_id))
 
         # Game-loop ws communication
         while True:
-            command: WebsocketIncomingCommand = json.loads(await conn.recieve_text())
-            json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(request.game_id, command)
-            await conn.send_text(json.dumps(json_response))
+            msg = await conn.receive_text()
+            command: WebsocketIncomingCommand = WebsocketIncomingCommand(**json.loads(msg))
+            json_response: WebsocketOutgoingCommand = game_multiplexer.process_message(initial_request.game_id, command)
+            await conn.send_text(json_response.json())
     
     except WebSocketDisconnect:
         # Cleanup
-        print("Client disconnected")
+        if payload is not None and initial_request is not None:
+            print(f"{payload.get('su')} disconnected from {initial_request.game_id}")
+
+            game_multiplexer.disconnect(initial_request.game_id, payload.get('su'))
