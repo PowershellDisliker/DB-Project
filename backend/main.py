@@ -1,7 +1,7 @@
 import uvicorn
 from app import run
 
-app = run()
+app, db_hook = run()
 
 def main() -> None:
     uvicorn.run("main:app", reload=True)

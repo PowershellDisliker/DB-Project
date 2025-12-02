@@ -11,63 +11,56 @@ from db import DBClient
 from config import Config
 from game import GameMultiplexer
 
-def run() -> FastAPI:
-    # Python services
-    app = FastAPI()
-    configuration = Config()
-    database = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
-    game_multiplexer = GameMultiplexer()
+# Python services
+app = FastAPI()
+configuration = Config()
+database = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
+game_multiplexer = GameMultiplexer()
 
-    # REMOVE IN PRODUCTION!!!
-    origins = [
-        "http://localhost:5173"
-    ]
+# REMOVE IN PRODUCTION!!!
+origins = [
+    "http://localhost:5173"
+]
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# END REMOVE!!!
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
+
+# Strips authenitcation header for jwt and returns current users id
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
-    # END REMOVE!!!
-
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
-
-
-    # Strips authenitcation header for jwt and returns current users id
-    async def get_current_user(token: str = Depends(oauth2_scheme)):
-
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-        try:
-            payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=["HS256"])
-            identity: str = payload.get("id")
-            if identity is None:
-                raise credentials_exception
-
-            return {
-                "user_id": identity
-            }
-
-        except JWTError:
+    try:
+        payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=["HS256"])
+        identity: str = payload.get("id")
+        if identity is None:
             raise credentials_exception
+        return {
+            "user_id": identity
+        }
+    except JWTError:
+        raise credentials_exception
 
-    # Routes
-    app.include_router(auth_router, prefix="/api/auth")
-    app.include_router(closedgame_router, prefix="/api/closedgame")
-    app.include_router(friend_router, prefix="/api/friend")
-    app.include_router(message_router, prefix="/api/message")
-    app.include_router(opengame_router, prefix="/api/opengame")
-    app.include_router(user_router, prefix="/api/user")
+def get_db() -> DBClient:
+    return database
 
-    # Websocket Route
-    app.include_router(ws_router, prefix="/ws")
-    
+# Routes
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(closedgame_router, prefix="/api/closedgame")
+app.include_router(friend_router, prefix="/api/friend")
+app.include_router(message_router, prefix="/api/message")
+app.include_router(opengame_router, prefix="/api/opengame")
+app.include_router(user_router, prefix="/api/user")
 
-
-    return app
+# Websocket Route
+app.include_router(ws_router, prefix="/ws")
