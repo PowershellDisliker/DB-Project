@@ -8,9 +8,9 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-@router.get("/closedgames/")
-async def get_closed_games(user = Depends(get_current_user), db: DBClient = Depends(get_db)) -> list[GetClosedGameResponse]:
-    data = db.get_closed_games(uuid.UUID(user_id))
+@router.get("/closedgames")
+async def get_closed_games(current_user = Depends(get_current_user), db: DBClient = Depends(get_db)) -> list[GetClosedGameResponse]:
+    data = db.get_closed_games(uuid.UUID(current_user.user_id))
 
     if data is None:
         return []
@@ -26,7 +26,7 @@ async def get_closed_games(user = Depends(get_current_user), db: DBClient = Depe
         for row in data]
 
 
-@router.post("/api/closedgames")
+@router.post("/closedgames")
 async def create_closed_game(request: PostClosedGameRequest, db: DBClient = Depends(get_db)) -> PostClosedGameResponse:
     data = db.post_closed_game(request.game_id, request.winner)
 

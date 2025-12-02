@@ -8,10 +8,13 @@ router = APIRouter(
 )
 
 @router.get("/api/friends")
-async def get_friends(request: GetFriendRequest, db: DBClient = Depends(get_db)):
-    data = db.get_friends(request.user_id)
+async def get_friends(user = Depends(get_current_user), db: DBClient = Depends(get_db)) -> GetFriendResponse:
+    data = db.get_friends(user.user_id)
 
-    data = [data]
+    if data is None:
+        return GetFriendResponse()
+
+    data = [d.friend_id for d in data]
 
     return GetFriendResponse(
         friend_ids=data
@@ -19,5 +22,9 @@ async def get_friends(request: GetFriendRequest, db: DBClient = Depends(get_db))
 
 
 @router.post("/api/friends")
-async def post_friends(request: FriendsPostRequest, db: DBClient = Depends(get_db)):
-    return 
+async def post_friends(request: FriendsPostRequest, db: DBClient = Depends(get_db)) -> PostFriendResponse:
+    success = db.post_friend(request.user_1_id, request.user_2_id)
+
+    return PostFriendRequest(
+        success=success
+    )

@@ -2,16 +2,13 @@ from pydantic import BaseModel
 
 # /api/friends
 # GET
-class GetFriendRequest(BaseModel):
-    user_id: uuid.UUID
-
 class GetFriendResponse(BaseModel):
-    friend_ids: list[uuid.UUID]
+    friend_ids: list[uuid.UUID] | None
 
 # POST
 class PostFriendRequest(BaseModel):
-    ID1: uuid.UUID
-    ID2: uuid.UUID
+    user_1_id: uuid.UUID
+    user_2_id: uuid.UUID
 
 class PostFriendResponse(BaseModel):
     success: bool

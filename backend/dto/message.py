@@ -1,23 +1,17 @@
 from pydantic import BaseModel
 
+class Message(BaseModel):
+    message_id: uuid.UUID
+    time_stamp: int
+    message: str
+
 # /api/message
 # GET
-class GetMessageRequest(BaseModel):
-    sender_id: uuid.UUID
-    recipient_id: uuid.UUID
-
-
 class GetMessageResponse(BaseModel):
-    class InternalMessage(BaseModel):
-        message_id: uuid.UUID
-        time_stamp: int
-        message: str
-
-    messages: list[InternalMessage]
+    messages: list[Message] | None = None
 
 # POST
 class PostMessageRequest(BaseModel):
-    sender_id: uuid.UUID
     recipient_id: uuid.UUID
     message: str
 

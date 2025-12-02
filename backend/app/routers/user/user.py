@@ -1,24 +1,36 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from db import DBClient
+from app import get_db, get_current_user
+from dto import GetPublicUserDataResponse
+import uuid
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(get_current_user)]
+)
 
 @router.get("/api/user/public")
-async def public_user_data(request: PublicUserDataRequest, current_user: dict = Depends(get_current_user)) -> PublicUserDataResponse:
-    data = database.get_public_user(request.user)
+async def public_user_data(user_id: str, current_user: dict = Depends(get_current_user), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
+    data = db.get_public_user(uuid.UUID(user_id))
 
-    return {
-        "username": data.Username,
-        "online": data.Online
-    }
+    if data is None:
+        return GetPublicUserDataResponse()
+
+    return GetPublicUserDataResponse(
+        username=data.user_id,
+        online=data.online
+    )
 
 
 @router.get("/api/user/private")
-async def get_user_data(request: PrivateUserDataRequest, current_user: dict = Depends(get_current_user)) -> PrivateUserDataResponse:
-    data = database.get_private_user(request.user_id)
+async def get_user_data(request: GetPrivateUserDataRequest, current_user: dict = Depends(get_current_user), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
+    data = db.get_private_user(request.user_id)
+
+    if data is None:
+        return GetPrivateUserDataResponse()
     
-    return {
-        "user_id": d.ID,
-        "username": d.Username,
-        "pass_hash": d.PassHash,
-        "online": d.Online
-    }
+    return GetPrivateUserDataResponse(
+        user_id=d.ID,
+        username=d.Username,
+        pass_hash=d.PassHash,
+        online=d.Online
+    )

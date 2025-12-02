@@ -1,19 +1,16 @@
 from pydantic import BaseModel
 
 # /api/user/public
-class PublicUserDataRequest(BaseModel):
-    user_id: uuid.UUID
-
-class PublicUserDataResponse(BaseModel):
-    username: str
-    online: bool
+class GetPublicUserDataResponse(BaseModel):
+    username: str | None = None
+    online: bool | None = None
 
 # /api/user/private
-class PrivateUserDataRequest(BaseModel):
+class GetPrivateUserDataRequest(BaseModel):
     user_id: uuid.UUID
 
-class PrivateUserDataResponse(BaseModel):
-    user_id: uuid.UUID
-    username: str
-    online: bool
-    pass_hash: str
+class GetPrivateUserDataResponse(BaseModel):
+    user_id: uuid.UUID | None = None
+    username: str | None = None
+    online: bool | None = None
+    pass_hash: str | None = None

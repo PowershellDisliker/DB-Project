@@ -1,25 +1,41 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from db import DBClient
+from app import get_db, get_current_user
+from dto import GetOpenGamesResponse, PostOpenGamesResponse, OpenGame
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(get_current_user)]
+)
 
-@router.get("/api/opengames")
-async def get_open_games(current_user: dict = Depends(get_current_user)) -> GetOpenGamesResponse:
-    data = database.get_open_games()
+@router.get("/opengames")
+async def get_open_games(current_user: dict = Depends(get_current_user), db: DBClient = Depends(get_db)) -> GetOpenGamesResponse:
+    data = db.get_open_games()
 
-    return [
-        {
-            "gameID": d.GameID,
-            "user1ID": d.User1ID,
-            "canJoin": d.User2ID == None
-        } 
-        for d in data
-    ]
+    if data is None:
+        GetOpenGamesResponse()
 
-@router.post("/api/opengames")
-async def create_new_game(current_user: dict = Depends(get_current_user)) -> PostOpenGamesResponse:
-    data = database.post_open_game(current_user["user_id"])
+    return GetOpenGamesResponse(
+            [
+            OpenGame(
+                game_id=d.game_id,
+                user_1_id=d.user_1_id,
+                can_join=d.user_2_id == None
+            )
+            for d in data
+        ]
+    )
 
-    return {
-        "success": True,
-        "game_id": data.ID
-    }
+
+@router.post("/opengames")
+async def create_new_game(current_user: dict = Depends(get_current_user), db: DBClient = Depends(get_db)) -> PostOpenGamesResponse:
+    data = db.post_open_game(current_user.user_id)
+
+    if data is None:
+        return PostOpenGamesResponse(
+            success=False
+        )
+
+    return PostOpenGamesResponse(
+        success=True,
+        game_id=data.ID
+    )

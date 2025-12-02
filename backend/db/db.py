@@ -159,21 +159,21 @@ class DBClient:
         )
 
 
-    def get_private_user(self, identity: uuid.UUID) -> DB_User | None:
+    def get_private_user(self, user_id: uuid.UUID) -> DB_User | None:
         result = self.__run_query("SELECT Username, PassHash, Online FROM Users WHERE ID = :identity", {"identity": identity})
 
         if not result:
             return None
 
         return DB_User(
-            user_id=identity,
+            user_id=user_id,
             username=result[0].Username,
             pass_hash=result[0].PassHash,
             online=result[0].Online
         )
 
 
-    def post_token(self, identity: str, token: str) -> bool:
+    def post_token(self, user_id: str, token: str) -> bool:
         result = self.__run_exec("INSERT INTO ActiveTokens (Token, UserID) VALUES (:token, :user)", {"token": token, "user": identity})
 
         if result.rowcount <= 0:
@@ -181,7 +181,7 @@ class DBClient:
         return True
 
 
-    def get_token(self, identity: uuid.UUID, token: str) -> bool:
+    def get_token(self, user_id: uuid.UUID, token: str) -> bool:
         result = self.__run_query("SELECT * FROM ActiveTokens WHERE UserID = :id AND Token = :tok", {"id": identity, "tok": token})
 
         if not result:
@@ -189,13 +189,19 @@ class DBClient:
         return True
 
 
-    def post_open_game(self, user1id: str) -> bool:
+    def post_open_game(self, user_1_id: str) -> DB_OpenGame | None:
+        game_id = uuid.uuid4()
+
         result = self.__run_exec("INSERT INTO OpenGames (ID, User1ID) VALUES (:id, :user1)", 
-            {"id": uuid.uuid4(), "user1": user1id})
+            {"id": game_id, "user1": user1id})
 
         if result.rowcount <= 0:
-            return False
-        return True
+            return None
+            
+        return DB_OpenGame(
+            game_id=game_id,
+            user_1_id=user_1_id
+        )
 
 
     def get_open_games(self) -> list[DB_OpenGame] | None:
