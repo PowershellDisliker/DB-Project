@@ -33,26 +33,39 @@ app.add_middleware(
 # END REMOVE!!!
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
+
 # Strips authenitcation header for jwt and returns current users id
 async def get_current_user(token: str = Depends(oauth2_scheme)):
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=["HS256"])
         identity: str = payload.get("id")
-        if identity is None:
-            raise credentials_exception
-        return {
-            "user_id": identity
-        }
+
+        if not database.validate_user():
+            return credentials_exception
+
+
+        return DB_User(
+            user_id=identity
+        )
+
     except JWTError:
         raise credentials_exception
 
+
 def get_db() -> DBClient:
     return database
+
+
+def get_config() -> Config:
+    return configuration
+
 
 # Routes
 app.include_router(auth_router, prefix="/api/auth")

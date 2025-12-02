@@ -1,1 +1,1 @@
-from .app import run, get_db, get_current_user
+from .app import run, get_db, get_current_user, get_config

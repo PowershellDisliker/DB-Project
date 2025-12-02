@@ -100,16 +100,22 @@ class DBClient:
             return conn.execute(text(query), params or {})
 
     # Specific data functions, these are what will be called in app.py
-    def validate_user(self, user: str, passw: str) -> bool:
+    def validate_user(self, user: str, passw: str) -> DB_User | None:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """
         result = self.__run_query("SELECT PassHash FROM Users WHERE Username = :username", {"username": user})
 
         if not result:
-            return False
+            return None
 
-        return bcrypt.checkpw(passw.encode("utf-8"), result[0].PassHash.encode("utf-8"))
+        if not bcrypt.checkpw(passw.encode("utf-8"), result[0].PassHash.encode("utf-8")):
+            return None
+
+        return DB_User(
+            user_id=result[0].ID,
+            username=result[0].Username,
+        )
 
 
     def post_user(self, user: str, passw: str) -> DB_User | None:

@@ -14,7 +14,9 @@ class GetClosedGameResponse(BaseModel):
 
 # POST
 class PostClosedGameRequest(BaseModel):
-    identity: uuid.UUID
+    game_id: uuid.UUID
+    winner: uuid.UUID
 
 class PostClosedGameResponse(BaseModel):
     success: bool
+    game_id: uuid.UUID | None = None
