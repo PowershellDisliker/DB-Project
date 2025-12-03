@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {useNavigate} from "react-router-dom";
+import { ConfigContext, AuthContext } from "../../context";
 import loginStyles from "./login.module.css";
 import globalStyles from "../global.module.css";
 import { type loginViewModel } from "./login-vm";
-import { AttemptLogin } from "../api";
+import { attemptLogin, attemptRegister } from "../../api";
+import type { AuthResponse } from "../../dto";
 
 function Login() {
     // Used for SPA re-routing
     const navigate = useNavigate();
+
+    const config = useContext(ConfigContext);
+    const {setToken} = useContext(AuthContext);
 
     // Component State
     const [viewModel, updateViewModel] = useState<loginViewModel>({
@@ -33,21 +38,32 @@ function Login() {
     };
 
     const loginHandler = async () => {
-        let success: boolean = (await AttemptLogin(viewModel.username ?? "", viewModel.password ?? "")).success;
+        const response: AuthResponse = await attemptLogin(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "")
 
-        if (success) {
+        if (response.success) {
+            setToken(response.token);
             navigate("/home");
         } else {
             updateViewModel(prev => ({
                 ...prev,
                 failedLoginAttempt: true
             }))
-        };
-    }
+        }
+    };
 
     const registerHandler = async () => {
-        
-    }
+        const response: AuthResponse = await attemptRegister(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "")
+
+        if (response.success) {
+            setToken(response.token);
+            navigate("/home");
+        } else {
+            updateViewModel(prev => ({
+                ...prev,
+                failedRegisterAttempt: true
+            }))
+        }
+    };
 
     return (
         <div>

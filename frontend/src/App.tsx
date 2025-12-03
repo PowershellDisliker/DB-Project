@@ -1,9 +1,7 @@
-import { ConfigContext, type Config } from "./config";
+import { ConfigContext, type Config, AuthContext} from "./context";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useMemo } from "react";
-import { Login } from "./login";
-import { Home } from "./home";
-import { Game } from "./game";
+import { useMemo, useState } from "react";
+import { Login, Home, Game } from "./routes";
 
 function App() {
 
@@ -12,15 +10,19 @@ function App() {
     API_KEY: import.meta.env.VITE_API_KEY,
   }), [])
 
+  const [token, setToken] = useState<string | null>(null);
+
   return (
     <ConfigContext.Provider value={configuration}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/home" element={<Home/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/game" element={<Game />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthContext.Provider value={{token, setToken}}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/home" element={<Home/>}/>
+            <Route path="/login" element={<Login/>}/>
+            <Route path="/game" element={<Game />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthContext.Provider>
     </ConfigContext.Provider>
   )
 }

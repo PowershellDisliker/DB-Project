@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
-import { ConfigContext } from '../../config';
+import { ConfigContext } from '../../context';
 import { Piece } from './game-vm';
 
 // CONSTANTS MOVE TO CONFIG?
