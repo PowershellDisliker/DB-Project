@@ -25,5 +25,5 @@ export interface WebsocketResponse {
     col: number | null;
 
     success: boolean | null;
-    winner: string | null;
+    winner_id: string | null;
 }

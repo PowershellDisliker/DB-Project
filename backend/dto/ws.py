@@ -29,4 +29,4 @@ class WebsocketOutgoingCommand(BaseModel):
     col: int | None = None
     
     success: bool | None = None
-    winner: uuid.UUID | None = None
+    winner_id: uuid.UUID | None = None

@@ -1,23 +1,36 @@
+const PIECE_RADIUS = 30;
+
 export class Piece {
-    col: number;
     row: number;
+    col: number;
 
-    yPos: number = 0;
-    
+    yPos: number;
+    targetY: number;
+
+    dy: number;
+
     color: string;
-
-    dy: number = 0.0;
 
     constructor(row: number, col: number, color: string) {
         this.row = row;
         this.col = col;
-
         this.color = color;
+
+        // Start above column
+        this.yPos = -80;
+        
+        // Where the piece should stop
+        this.targetY = row * PIECE_RADIUS * 2;
+
+        // Initial velocity
+        this.dy = 0;
     }
 }
 
 export interface SlowState {
+    game_running: boolean | null;
     active_player: boolean | null;
+
 }
 
 export interface RealTimeState {
@@ -27,6 +40,5 @@ export interface RealTimeState {
     player_2_id: string | null;
 
     active_player: string | null;
-
-    gameActive: boolean;
+    winner_id: string | null;
 }

@@ -24,26 +24,27 @@ interface CanvasProps {
 }
 
 function GameCanvas({game_id}: CanvasProps) {
+    // Get contexts
     const config = useContext(ConfigContext);
     const auth = useContext(AuthContext);
     
     // State
     const [viewModel, setViewModel] = useState<SlowState>({
       active_player: null,
+      game_running: null
     });
-    const RealTimeState = useRef<RealTimeState>(null);
+
+    const RealTimeState = useRef<RealTimeState>({
+      active_player: null,
+      player_1_id: null,
+      player_2_id: null,
+      pieces: [],
+      winner_id: null
+    });
 
     // sub-component references
     const ws = useRef<WebSocket>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    // Updates slow state from changes in real time state
-    useEffect(() => {
-      setViewModel((previous) => ({
-        ...previous,
-        active_player: RealTimeState.current?.active_player == auth.user_id,
-      }))
-    }, [RealTimeState.current?.active_player])
     
     // Animation Effect
     useEffect(() => {
@@ -55,23 +56,29 @@ function GameCanvas({game_id}: CanvasProps) {
     // const imageMask = new Image();
     // imageMask.src = '../../../public/board-mask.png';
 
-    // TODO remove test pieces
-    let pieces: Piece[] = [];
-
     const drawFrame = () => {
       gc.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
 
       // Draw and update all the pieces
-      pieces.forEach((piece) => {
+      RealTimeState.current.pieces.forEach((piece) => {
+        if (!piece) {
+          return;
+        }
+
         gc.beginPath();
-        gc.arc(piece.col * 80, piece.yPos, PIECE_RADIUS, 0, Math.PI * 2);
+        gc.arc(piece.col * PIECE_RADIUS * 2, piece.yPos, PIECE_RADIUS, 0, Math.PI * 2);
         gc.fillStyle = piece.color;
         gc.fill();
 
         // Update piece positions
+        piece.dy += gravity * timeScale;
         piece.yPos += piece.dy * timeScale;
-        piece.dy -= gravity * timeScale;
-        if (piece.yPos > piece.row * PIECE_RADIUS * 2 && piece.dy > 0) piece.dy *= -0.8; // debounced
+              
+        if (piece.yPos >= piece.targetY) {
+            piece.yPos = piece.targetY;
+            piece.dy = 0;
+        }
+
       });
     //   gc.drawImage(imageMask, 0, 0);
 
@@ -117,15 +124,37 @@ function GameCanvas({game_id}: CanvasProps) {
           
           // Realtime state update
           RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == RealTimeState.current!.player_1_id ? COLORS[0] : COLORS[1]));
+
+          if (jsonData.winner_id) {
+            setViewModel(() => ({
+              game_running: false,
+              active_player: false,
+            }))
+            break;
+          }
+
+          // Visual state update
+          setViewModel(() => ({
+            game_running: true,
+            active_player: !viewModel.active_player,
+          }));
           break;
 
         case 'board_state':
           // Real time state update
-          RealTimeState.current!.active_player = jsonData.active_player;
-          RealTimeState.current!.player_1_id = jsonData.user_1_id;
-          RealTimeState.current!.player_2_id = jsonData.user_2_id;
+          RealTimeState.current.active_player = jsonData.active_player;
+          RealTimeState.current.player_1_id = jsonData.user_1_id;
+          RealTimeState.current.player_2_id = jsonData.user_2_id;
+          RealTimeState.current.winner_id = jsonData.winner_id;
 
-          RealTimeState.current!.pieces = jsonData.board_state!.map((value, index) => {
+          if (jsonData.winner_id) {
+            setViewModel((prev) => ({
+              game_running: false,
+              active_player: false, 
+            }))
+          }
+
+          RealTimeState.current.pieces = jsonData.board_state!.map((value, index) => {
             if (!value) return null;
             let row = Math.floor(index / COLS)
             let col = index % COLS
@@ -157,9 +186,11 @@ function GameCanvas({game_id}: CanvasProps) {
   }, []);
 
   const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!viewModel?.active_player) return;
+    if (!viewModel.active_player || !viewModel.game_running) return;
 
-    const x = e.clientX;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
 
     if (x < margin / 2 || x > margin / 2 + (canvasRef.current!.width - margin)) return;
 

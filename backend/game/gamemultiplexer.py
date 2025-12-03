@@ -23,6 +23,7 @@ class GameMultiplexer:
             board_state=board_state.positions,
             user_1_id=board_state.user_1_id,
             user_2_id=board_state.user_2_id,
+            winner_id=board_state.winner_id,
             active_player=board_state.active_player
         )
 
@@ -43,7 +44,7 @@ class GameMultiplexer:
         return WebsocketOutgoingCommand(
             command_type="drop_piece_response",
             success=result[0],
-            winner=result[1],
+            winner_id=result[1],
             row=result[2][0],
             col=result[2][1]
         )
