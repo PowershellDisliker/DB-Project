@@ -8,6 +8,7 @@ function App() {
   let configuration: Config = useMemo(() => ({
     BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
     API_KEY: import.meta.env.VITE_API_KEY,
+    BACKEND_WS_URL: import.meta.env.VITE_BACKEND_WS_URL,
   }), [])
 
   const [token, setToken] = useState<string | null>(null);

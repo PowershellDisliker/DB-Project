@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import type { GameViewModel } from "./game-vm";
-import {GameCanvas} from '../components/game-canvas';
+import {GameCanvas} from '../../components/game-canvas';
 import globalStyles from "../global.module.css";
 
 function Game() {

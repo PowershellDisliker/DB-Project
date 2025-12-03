@@ -9,8 +9,8 @@ router = APIRouter(
 )
 
 @router.get("/user/public")
-async def public_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
-    data = db.get_public_user(user_query_id)
+async def public_user_data(user_query_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
+    data = db.get_public_user(uuid.UUID(user_query_id))
 
     if data is None:
         return GetPublicUserDataResponse()
@@ -22,8 +22,8 @@ async def public_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depend
 
 
 @router.get("/user/private")
-async def get_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
-    data = db.get_private_user(user_query_id)
+async def get_user_data(user_query_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
+    data = db.get_private_user(uuid.UUID(user_query_id))
 
     if data is None:
         return GetPrivateUserDataResponse()

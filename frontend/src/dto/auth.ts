@@ -7,3 +7,7 @@ export interface AuthResponse {
     success: boolean,
     token: string | null
 }
+
+export interface C4JWT {
+    su: string
+}

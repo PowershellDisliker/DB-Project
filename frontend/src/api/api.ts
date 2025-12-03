@@ -29,7 +29,7 @@ async function postBackend<T>(backend_url: string, route: string, request: unkno
     return jsonData as T;
 }
 
-async function getBackend<T>(backend_url: string, route:string, jwt: string | null = null) {
+async function getBackend<T>(backend_url: string, route: string, jwt: string | null = null) {
     const res = await fetch(
         backend_url + route,
         {
@@ -90,10 +90,10 @@ export const postOpenGame = async (backend_url: string, jwt: string): Promise<Po
     return postBackend<PostOpenGamesResponse>(backend_url, "/api/opengames", {}, jwt)
 }
 
-export const getPublicUser = async (backend_url: string, jwt: string): Promise<GetPublicUserResponse> => {
-    return getBackend<GetPublicUserResponse>(backend_url, "/api/user/public", jwt);
+export const getPublicUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPublicUserResponse> => {
+    return getBackend<GetPublicUserResponse>(backend_url, `/api/user/public?query_user_id=${user_id}`, jwt);
 }
 
-export const getPrivateUser = async (backend_url: string, jwt: string): Promise<GetPrivateUserResponse> => {
-    return getBackend<GetPrivateUserResponse>(backend_url, "/api/user/private", jwt)
+export const getPrivateUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPrivateUserResponse> => {
+    return getBackend<GetPrivateUserResponse>(backend_url, `/api/user/private?query_user_id=${user_id}`, jwt)
 }
