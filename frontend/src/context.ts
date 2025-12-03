@@ -8,6 +8,9 @@ export interface Config {
 export interface AuthState {
   token: string | null;
   setToken: (t: string | null) => void;
+
+  user_id: string | null;
+  setUserId: (t: string | null) => void;
 }
 
 export const ConfigContext = createContext<Config>({} as Config);

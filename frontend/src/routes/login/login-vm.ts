@@ -8,4 +8,5 @@ export type loginViewModel = {
     password: string | null;
 
     failedLoginAttempt: boolean;
+    failedRegisterAttempt: boolean;
 };

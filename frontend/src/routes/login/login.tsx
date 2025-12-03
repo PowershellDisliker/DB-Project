@@ -12,7 +12,7 @@ function Login() {
     const navigate = useNavigate();
 
     const config = useContext(ConfigContext);
-    const {setToken} = useContext(AuthContext);
+    const {setToken, setUserId} = useContext(AuthContext);
 
     // Component State
     const [viewModel, updateViewModel] = useState<loginViewModel>({
@@ -20,6 +20,7 @@ function Login() {
         password: null,
 
         failedLoginAttempt: false,
+        failedRegisterAttempt: false,
     });
 
     // Interaction Handlers
@@ -42,6 +43,7 @@ function Login() {
 
         if (response.success) {
             setToken(response.token);
+            setUserId(response.user_id);
             navigate("/home");
         } else {
             updateViewModel(prev => ({
@@ -56,6 +58,7 @@ function Login() {
 
         if (response.success) {
             setToken(response.token);
+            setUserId(response.user_id);
             navigate("/home");
         } else {
             updateViewModel(prev => ({

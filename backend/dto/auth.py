@@ -10,3 +10,4 @@ class AuthRequest(BaseModel):
 class AuthResponse(BaseModel):
     success: bool
     token: str | None
+    user_id: str | None

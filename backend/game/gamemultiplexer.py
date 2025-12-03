@@ -1,3 +1,4 @@
+from fastapi import WebSocket
 from .game import ConnectFourBoard
 from typing import Tuple
 from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState
@@ -5,8 +6,7 @@ import uuid
 
 
 class GameMultiplexer:
-    games: dict[uuid.UUID, ConnectFourBoard] = {}
-
+    games: dict[uuid.UUID, Tuple[ConnectFourBoard, set[WebSocket]]] = {}
 
     def __get_error_response(self, msg: str) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(

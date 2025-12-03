@@ -14,7 +14,8 @@ async def login(request: AuthRequest, db: DBClient = Depends(get_db), config: Co
 
     return AuthResponse(
         success=db_request is not None,
-        token=jwt.encode({"sub": db_request.user_id}, config.SECRET_KEY, config.JWT_ALGO) if db_request is not None else None
+        token=jwt.encode({"sub": db_request.user_id}, config.SECRET_KEY, config.JWT_ALGO) if db_request is not None else None,
+        user_id=db_request.user_id
     )
         
 
@@ -25,5 +26,6 @@ async def register_new_user(request: AuthRequest, db: DBClient = Depends(get_db)
 
     return AuthResponse(
         success=db_request is not None,
-        token=jwt.encode({"sub": db_request.user_id}, config.SECRET_KEY, config.JWT_ALGO) if db_request is not None else None
+        token=jwt.encode({"sub": db_request.user_id}, config.SECRET_KEY, config.JWT_ALGO) if db_request is not None else None,
+        user_id=db_request.user_id
     )

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
-import { ConfigContext } from '../../context';
+import { AuthContext, ConfigContext } from '../../context';
 import { Piece } from './game-vm';
 import type { WebsocketResponse } from '../../dto';
+import { json } from 'stream/consumers';
 
 // CONSTANTS MOVE TO CONFIG?
 const HorizontalAspectRatio = 16;
@@ -25,6 +26,7 @@ interface CanvasProps {
 
 function GameCanvas({game_id}: CanvasProps) {
     const config = useContext(ConfigContext);
+    const auth = useContext(AuthContext);
     
     // State
     const [viewModel, setViewModel] = useState<SlowState>({
@@ -87,6 +89,8 @@ function GameCanvas({game_id}: CanvasProps) {
     ws.current.addEventListener('message', (message: MessageEvent) => {
       const jsonData: WebsocketResponse = JSON.parse(message.data);
 
+      if (jsonData.game)
+
       switch (jsonData.command_type) {
         case 'drop_piece_response':
           // update pieces array
@@ -106,19 +110,20 @@ function GameCanvas({game_id}: CanvasProps) {
           RealTimeState.current!.active_player = jsonData.active_player;
           RealTimeState.current!.player_1_id = jsonData.user_1_id;
           RealTimeState.current!.player_2_id = jsonData.user_2_id;
+
           RealTimeState.current!.pieces = jsonData.board_state!.map((value, index) => {
             if (!value) return null;
             let row = Math.floor(index / COLS)
             let col = index % COLS
 
             return new Piece(row, col, value == jsonData.user_1_id ? COLORS[0] : COLORS[1]);
-          })
+          });
           
           // update visual state here
-          setViewModel((prev) => {
-            game_id: prev.game_id
-            active_player: 
-          });
+          setViewModel((prev) => ({
+            game_id: prev.game_id,
+            active_player: auth.user_id == jsonData.active_player,
+          }));
           break;
 }
     });
