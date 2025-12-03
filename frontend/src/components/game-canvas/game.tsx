@@ -3,7 +3,6 @@ import { type SlowState, type RealTimeState } from './game-vm';
 import { AuthContext, ConfigContext } from '../../context';
 import { Piece } from './game-vm';
 import type { WebsocketRequest, WebsocketResponse } from '../../dto';
-import { json } from 'stream/consumers';
 
 // CONSTANTS MOVE TO CONFIG?
 const HorizontalAspectRatio = 16;
@@ -30,7 +29,6 @@ function GameCanvas({game_id}: CanvasProps) {
     
     // State
     const [viewModel, setViewModel] = useState<SlowState>({
-      game_id: game_id,
       active_player: null,
     });
     const RealTimeState = useRef<RealTimeState>(null);
@@ -38,6 +36,14 @@ function GameCanvas({game_id}: CanvasProps) {
     // sub-component references
     const ws = useRef<WebSocket>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    // Updates slow state from changes in real time state
+    useEffect(() => {
+      setViewModel((previous) => ({
+        ...previous,
+        active_player: RealTimeState.current?.active_player == auth.user_id,
+      }))
+    }, [RealTimeState.current?.active_player])
     
     // Animation Effect
     useEffect(() => {
@@ -82,6 +88,7 @@ function GameCanvas({game_id}: CanvasProps) {
   useEffect(() => {
     ws.current = new WebSocket(config!.BACKEND_WS_URL!);
 
+    // OnOpen
     ws.current.addEventListener('open', async (event: Event) => {
       await ws.current!.send(JSON.stringify({
         command_type: 'get_board_state',
@@ -91,17 +98,17 @@ function GameCanvas({game_id}: CanvasProps) {
 
       await ws.current!.send(JSON.stringify({
         command_type: 'register_user',
-        
+        user_id: auth.user_id,
       } as WebsocketRequest))
     });
 
+    // in-loop
     ws.current.addEventListener('message', (message: MessageEvent) => {
       const jsonData: WebsocketResponse = JSON.parse(message.data);
 
       switch (jsonData.command_type) {
         case 'drop_piece_response':
           const current_player_id = RealTimeState.current!.active_player;
-          const player_1_id = RealTimeState.current!.player_1_id;
 
           if (!jsonData.row || !jsonData.col) {
             console.log("No row or column in drop_piece_ressponse");
@@ -109,7 +116,7 @@ function GameCanvas({game_id}: CanvasProps) {
           }
           
           // Realtime state update
-          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == player_1_id ? COLORS[0] : COLORS[1]));
+          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == RealTimeState.current!.player_1_id ? COLORS[0] : COLORS[1]));
           break;
 
         case 'board_state':
@@ -125,30 +132,32 @@ function GameCanvas({game_id}: CanvasProps) {
 
             return new Piece(row, col, value == jsonData.user_1_id ? COLORS[0] : COLORS[1]);
           });
-          
-          // update visual state here
-          setViewModel((prev) => ({
-            game_id: prev.game_id,
-            active_player: auth.user_id == jsonData.active_player,
-          }));
           break;
         
         case 'register_response':
+          if (!jsonData.success) {
+            console.log(`error registering user ${auth.user_id != jsonData.user_1_id ? jsonData.user_1_id : jsonData.user_2_id}`)
+          }
 
-}
-    });
+          // State updates:
+          // realtime
+          RealTimeState.current!.player_1_id = jsonData.user_1_id;
+          RealTimeState.current!.player_2_id = jsonData.user_2_id;
+    }});
 
-    ws.current.addEventListener('close', (event) => {
+    // OnClose
+    ws.current.addEventListener('close', () => {
       console.log('Disconnected from ws backend');
     });
 
+    // Cleanup
     return () => {
       ws.current?.close();
     };
   }, []);
 
   const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!viewModel?.currentPlayer) return;
+    if (!viewModel?.active_player) return;
 
     const x = e.clientX;
 
@@ -158,10 +167,12 @@ function GameCanvas({game_id}: CanvasProps) {
     const pieceCol = Math.floor((x - (margin / 2)) / columnWidth);
 
     const message = {
-      type: 'drop_piece',
-      player: RealTimeState.current!.currentPlayer,
-      column: pieceCol,
-    };
+      command_type: 'drop_piece',
+
+      game_id: game_id,
+      col: pieceCol,
+      user_id: auth.user_id,
+    } as WebsocketRequest;
 
     ws.current?.send(JSON.stringify(message));
   };

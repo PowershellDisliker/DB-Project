@@ -6,7 +6,7 @@ import uuid
 
 
 class GameMultiplexer:
-    games: dict[uuid.UUID, Tuple[ConnectFourBoard, set[WebSocket]]] = {}
+    games: dict[uuid.UUID, ConnectFourBoard] = {}
 
     def __get_error_response(self, msg: str) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
@@ -26,14 +26,16 @@ class GameMultiplexer:
             active_player=board_state.active_player
         )
 
-    
-    def __get_register_response(self, success: bool) -> WebsocketOutgoingCommand:
+
+    def __get_register_response(self, success: bool, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
             command_type="register_response",
+            user_1_id=user_1_id,
+            user_2_id=user_2_id,
             success=success
         )
 
-    
+
     def __get_drop_piece_response(self, result: Tuple[bool, uuid.UUID | None, Tuple[int, int] | None]) -> WebsocketOutgoingCommand:
         if result[2] is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
@@ -104,7 +106,10 @@ class GameMultiplexer:
 
                 # Register the user and send the response
                 success: bool = game.register_player(request.user_id)
-                return self.__get_register_response(success)
+                users = game.get_players()
+                user_1_id: uuid.UUID | None = users[0]
+                user_2_id: uuid.UUID | None = users[1]
+                return self.__get_register_response(success, user_1_id, user_2_id)
 
             case "get_board_state":
                 if request.game_id is None:

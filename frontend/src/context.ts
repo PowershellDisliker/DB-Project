@@ -2,6 +2,7 @@ import {createContext} from 'react';
 
 export interface Config {
   BACKEND_URL: string;
+  BACKEND_WS_URL: string;
   API_KEY: string;
 }
 
@@ -14,4 +15,4 @@ export interface AuthState {
 }
 
 export const ConfigContext = createContext<Config>({} as Config);
-export const AuthContext = createContext<AuthState>({token: null} as AuthState)
+export const AuthContext = createContext<AuthState>({} as AuthState)

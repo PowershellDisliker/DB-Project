@@ -17,7 +17,6 @@ export class Piece {
 }
 
 export interface SlowState {
-    game_id: string | null;
     active_player: boolean | null;
 }
 

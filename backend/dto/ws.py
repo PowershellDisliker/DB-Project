@@ -18,6 +18,8 @@ class WebsocketOutgoingCommand(BaseModel):
     
     error: str | None = None
     
+    user_id: str | None = None
+
     user_1_id: uuid.UUID | None = None
     user_2_id: uuid.UUID | None = None
     board_state: list[uuid.UUID | None] | None = None
