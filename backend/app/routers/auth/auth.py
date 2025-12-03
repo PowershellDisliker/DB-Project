@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from db import DBClient
 from config import Config
-from app import get_db, get_config
+from app.dependencies import get_db, get_config
 from dto import AuthRequest, AuthResponse, DB_User
 import jwt
 

@@ -1,4 +1,4 @@
-from game import ConnectFourBoard
+from .game import ConnectFourBoard
 from typing import Tuple
 from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState
 import uuid
@@ -30,7 +30,7 @@ class GameMultiplexer:
     def __get_register_response(self, success: bool) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
             command_type="register_response",
-            register_response=success
+            success=success
         )
 
     

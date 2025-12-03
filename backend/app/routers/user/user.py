@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from db import DBClient
-from app import get_db, get_current_user_id
+from app.dependencies import get_db, get_current_user_id
 from dto import GetPublicUserDataResponse, GetPrivateUserDataResponse
 import uuid
 
@@ -8,7 +8,7 @@ router = APIRouter(
     dependencies=[Depends(get_current_user_id)]
 )
 
-@router.get("/api/user/public")
+@router.get("/user/public")
 async def public_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
     data = db.get_public_user(user_query_id)
 
@@ -21,7 +21,7 @@ async def public_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depend
     )
 
 
-@router.get("/api/user/private")
+@router.get("/user/private")
 async def get_user_data(user_query_id: uuid.UUID, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
     data = db.get_private_user(user_query_id)
 

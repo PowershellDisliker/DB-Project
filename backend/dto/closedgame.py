@@ -4,9 +4,6 @@ from datetime import timedelta
 
 # /api/closedgames
 # GET
-class GetClosedGameRequest(BaseModel):
-    player_id: uuid.UUID
-
 class GetClosedGameResponse(BaseModel):
     game_id: uuid.UUID
     user_1_id: uuid.UUID

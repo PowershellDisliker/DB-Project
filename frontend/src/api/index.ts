@@ -1,3 +1,6 @@
-import { AttemptLogin } from "./api";
+import {attemptLogin, attemptRegister, getClosedGames, postClosedGame, getFriends, postFriend, getMessages, postMessage,
+    getOpenGames, postOpenGame, getPublicUser, getPrivateUser
+} from "./api";
 
-export {AttemptLogin};
+export {attemptLogin, attemptRegister, getClosedGames, postClosedGame, getFriends, postFriend, getMessages, postMessage,
+    getOpenGames, postOpenGame, getPublicUser, getPrivateUser};

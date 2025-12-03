@@ -1,5 +1,5 @@
 import React from 'react';
-import type {FriendProps} from '../../common/types';
+import type {FriendProps} from '../../dto/types';
 
 function Friend(props: FriendProps) {
 

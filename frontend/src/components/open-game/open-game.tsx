@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { OpenGameProps } from '../../common/types';
+import type { OpenGameProps } from '../../dto/types';
 
 function OpenGame(props: OpenGameProps) {
 

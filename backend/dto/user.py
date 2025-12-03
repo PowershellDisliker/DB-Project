@@ -7,9 +7,6 @@ class GetPublicUserDataResponse(BaseModel):
     online: bool | None = None
 
 # /api/user/private
-class GetPrivateUserDataRequest(BaseModel):
-    user_id: uuid.UUID
-
 class GetPrivateUserDataResponse(BaseModel):
     user_id: uuid.UUID | None = None
     username: str | None = None

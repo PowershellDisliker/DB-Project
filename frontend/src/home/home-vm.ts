@@ -1,4 +1,4 @@
-import type { FriendProps, OpenGameProps, PreviousGameProps, UserDetails } from "../common/types";
+import type { FriendProps, OpenGameProps, PreviousGameProps, UserDetails } from "../dto/types";
 
 export type HomeViewModel = {
     user_details: UserDetails | null;

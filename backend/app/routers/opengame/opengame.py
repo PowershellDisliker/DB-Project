@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 import uuid
 from db import DBClient
-from app import get_db, get_current_user_id
+from app.dependencies import get_db, get_current_user_id
 from dto import GetOpenGamesResponse, PostOpenGamesResponse, OpenGame
 
 router = APIRouter(

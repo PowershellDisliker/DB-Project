@@ -1,20 +1,16 @@
-import { ConfigContext } from "./config";
+import { ConfigContext, type Config } from "./config";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useMemo } from "react";
 import { Login } from "./login";
 import { Home } from "./home";
 import { Game } from "./game";
 
-interface Config {
-  BACKEND_URL: string
-  API_KEY: string
-}
-
 function App() {
 
-  let configuration: Config = {
-    BACKEND_URL: import.meta.env.BACKEND_URL,
-    API_KEY: import.meta.env.API_KEY,
-  }
+  let configuration: Config = useMemo(() => ({
+    BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+    API_KEY: import.meta.env.VITE_API_KEY,
+  }), [])
 
   return (
     <ConfigContext.Provider value={configuration}>
