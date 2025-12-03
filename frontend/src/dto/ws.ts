@@ -23,6 +23,7 @@ export interface WebsocketResponse {
 
     row: number | null;
     col: number | null;
+    next_active_player_id: string | null;
 
     success: boolean | null;
     winner_id: string | null;

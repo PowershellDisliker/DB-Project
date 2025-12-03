@@ -73,7 +73,7 @@ function GameCanvas({game_id}: CanvasProps) {
         // Update piece positions
         piece.dy += gravity * timeScale;
         piece.yPos += piece.dy * timeScale;
-              
+
         if (piece.yPos >= piece.targetY) {
             piece.yPos = piece.targetY;
             piece.dy = 0;
@@ -136,7 +136,7 @@ function GameCanvas({game_id}: CanvasProps) {
           // Visual state update
           setViewModel(() => ({
             game_running: true,
-            active_player: !viewModel.active_player,
+            active_player: jsonData.next_active_player_id == auth.user_id,
           }));
           break;
 
@@ -148,7 +148,7 @@ function GameCanvas({game_id}: CanvasProps) {
           RealTimeState.current.winner_id = jsonData.winner_id;
 
           if (jsonData.winner_id) {
-            setViewModel((prev) => ({
+            setViewModel(() => ({
               game_running: false,
               active_player: false, 
             }))

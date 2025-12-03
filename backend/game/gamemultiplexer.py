@@ -37,16 +37,17 @@ class GameMultiplexer:
         )
 
 
-    def __get_drop_piece_response(self, result: Tuple[bool, uuid.UUID | None, Tuple[int, int] | None]) -> WebsocketOutgoingCommand:
-        if result[2] is None:
+    def __get_drop_piece_response(self, success: bool, winner_id: uuid.UUID | None, coords: Tuple[int, int] | None, next_active_player_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
+        if coords is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
         
         return WebsocketOutgoingCommand(
             command_type="drop_piece_response",
-            success=result[0],
-            winner_id=result[1],
-            row=result[2][0],
-            col=result[2][1]
+            success=success,
+            winner_id=winner_id,
+            row=coords[0],
+            col=coords[1],
+            next_active_player_id=next_active_player_id
         )
 
 
