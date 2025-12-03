@@ -12,6 +12,7 @@ class ConnectFourBoard:
         self.user_2_id: uuid.UUID | None = user_2_id
 
         self.active_player: uuid.UUID | None = user_1_id
+        self.winner_id: uuid.UUID | None
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 
@@ -89,14 +90,13 @@ class ConnectFourBoard:
             self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
             return DropPieceResponse(
                 success=True,
-                row=last_available_row,
-                col=col
+                coords=(last_available_row, col)
             )
+        self.winner_id = winner
         return DropPieceResponse(
             success=True,
             winner_id=winner,
-            row=last_available_row,
-            col=col
+            coords=(last_available_row, col)
         )
 
 
@@ -105,7 +105,8 @@ class ConnectFourBoard:
             user_1_id=self.user_1_id,
             user_2_id=self.user_2_id,
             positions=self.positions,
-            active_player=self.active_player
+            active_player=self.active_player,
+            winner_id=self.winner_id
         )
 
 

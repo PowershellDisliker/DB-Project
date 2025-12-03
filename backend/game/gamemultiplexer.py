@@ -1,7 +1,7 @@
 from fastapi import WebSocket
 from .game import ConnectFourBoard
 from typing import Tuple
-from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState
+from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse
 import uuid
 
 
@@ -37,17 +37,17 @@ class GameMultiplexer:
         )
 
 
-    def __get_drop_piece_response(self, success: bool, winner_id: uuid.UUID | None, coords: Tuple[int, int] | None, next_active_player_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
-        if coords is None:
+    def __get_drop_piece_response(self, game_response: DropPieceResponse) -> WebsocketOutgoingCommand:
+        if game_response.coords is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
         
         return WebsocketOutgoingCommand(
             command_type="drop_piece_response",
-            success=success,
-            winner_id=winner_id,
-            row=coords[0],
-            col=coords[1],
-            next_active_player_id=next_active_player_id
+            success=game_response.success,
+            winner_id=game_response.winner_id,
+            row=game_response.coords[0],
+            col=game_response.coords[1],
+            next_active_player_id=game_response.next_active_player_id,
         )
 
 

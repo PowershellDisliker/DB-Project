@@ -24,6 +24,7 @@ class WebsocketOutgoingCommand(BaseModel):
     user_2_id: uuid.UUID | None = None
     board_state: list[uuid.UUID | None] | None = None
     active_player: uuid.UUID | None = None
+    next_active_player_id: uuid.UUID | None = None
 
     row: int | None = None
     col: int | None = None
