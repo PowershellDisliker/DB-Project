@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
 import { AuthContext, ConfigContext } from '../../context';
 import { Piece } from './game-vm';
-import type { WebsocketResponse } from '../../dto';
+import type { WebsocketRequest, WebsocketResponse } from '../../dto';
 import { json } from 'stream/consumers';
 
 // CONSTANTS MOVE TO CONFIG?
@@ -82,18 +82,24 @@ function GameCanvas({game_id}: CanvasProps) {
   useEffect(() => {
     ws.current = new WebSocket(config!.BACKEND_WS_URL!);
 
-    ws.current.addEventListener('open', (event: Event) => {
+    ws.current.addEventListener('open', async (event: Event) => {
+      await ws.current!.send(JSON.stringify({
+        command_type: 'get_board_state',
+        game_id: game_id,
+        user_id: auth.user_id,
+      } as WebsocketRequest));
 
-    })
+      await ws.current!.send(JSON.stringify({
+        command_type: 'register_user',
+        
+      } as WebsocketRequest))
+    });
 
     ws.current.addEventListener('message', (message: MessageEvent) => {
       const jsonData: WebsocketResponse = JSON.parse(message.data);
 
-      if (jsonData.game)
-
       switch (jsonData.command_type) {
         case 'drop_piece_response':
-          // update pieces array
           const current_player_id = RealTimeState.current!.active_player;
           const player_1_id = RealTimeState.current!.player_1_id;
 
@@ -101,8 +107,9 @@ function GameCanvas({game_id}: CanvasProps) {
             console.log("No row or column in drop_piece_ressponse");
             break;
           }
-
-          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == player_1_id ? COLORS[0] : COLORS[1] ));
+          
+          // Realtime state update
+          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == player_1_id ? COLORS[0] : COLORS[1]));
           break;
 
         case 'board_state':
@@ -125,6 +132,9 @@ function GameCanvas({game_id}: CanvasProps) {
             active_player: auth.user_id == jsonData.active_player,
           }));
           break;
+        
+        case 'register_response':
+
 }
     });
 
