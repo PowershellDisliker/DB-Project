@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
 import { ConfigContext } from '../../context';
 import { Piece } from './game-vm';
+import type { WebsocketResponse } from '../../dto';
 
 // CONSTANTS MOVE TO CONFIG?
 const HorizontalAspectRatio = 16;
@@ -14,40 +15,40 @@ const timeScale = 1;
 const ROWS = 6;
 const COLS = 7;
 
-const PIECE_RADIUS = 30; // changed to make pieces smaller and easier to see
+const PIECE_RADIUS = 30;
 
-// PROPS
-interface GameCanvasProps {
-  startingPlayer: string;
+const COLORS = ["red", "yellow"];
+
+interface CanvasProps {
+  game_id: string | null
 }
 
-// COMPONENT
-function GameCanvas({ startingPlayer }: GameCanvasProps) {
+function GameCanvas({game_id}: CanvasProps) {
     const config = useContext(ConfigContext);
     
     // State
-    const [viewModel, setViewModel] = useState<SlowState>();
+    const [viewModel, setViewModel] = useState<SlowState>({
+      game_id: game_id,
+      active_player: null,
+    });
     const RealTimeState = useRef<RealTimeState>(null);
 
     // sub-component references
     const ws = useRef<WebSocket>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
+    // Animation Effect
     useEffect(() => {
     if (!canvasRef.current) return;
 
     const gc = canvasRef.current.getContext('2d');
     if (!gc) return;
 
-    const imageMask = new Image();
-    imageMask.src = '../../../public/board-mask.png';
+    // const imageMask = new Image();
+    // imageMask.src = '../../../public/board-mask.png';
 
     // TODO remove test pieces
-    let pieces: Piece[] = [
-        new Piece(0, 0, "black"),
-        new Piece(0, 1, "red"),
-        new Piece(0, 2, "black"),
-    ];
+    let pieces: Piece[] = [];
 
     const drawFrame = () => {
       gc.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
@@ -59,11 +60,10 @@ function GameCanvas({ startingPlayer }: GameCanvasProps) {
         gc.fillStyle = piece.color;
         gc.fill();
 
+        // Update piece positions
         piece.yPos += piece.dy * timeScale;
-        
         piece.dy -= gravity * timeScale;
-
-        if (piece.yPos > piece.row * 80 && piece.dy > 0) piece.dy *= -1;
+        if (piece.yPos > piece.row * PIECE_RADIUS * 2 && piece.dy > 0) piece.dy *= -0.8; // debounced
       });
     //   gc.drawImage(imageMask, 0, 0);
 
@@ -76,21 +76,49 @@ function GameCanvas({ startingPlayer }: GameCanvasProps) {
     };
   }, []);
 
+  // Websocket Effect
   useEffect(() => {
     ws.current = new WebSocket(config!.BACKEND_WS_URL!);
 
-    ws.current.addEventListener('message', (message) => {
-      const jsonData = JSON.parse(message.data);
+    ws.current.addEventListener('open', (event: Event) => {
 
-      switch (jsonData.type) {
-        case 'add_piece':
+    })
+
+    ws.current.addEventListener('message', (message: MessageEvent) => {
+      const jsonData: WebsocketResponse = JSON.parse(message.data);
+
+      switch (jsonData.command_type) {
+        case 'drop_piece_response':
           // update pieces array
-          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, "black"));
+          const current_player_id = RealTimeState.current!.active_player;
+          const player_1_id = RealTimeState.current!.player_1_id;
+
+          if (!jsonData.row || !jsonData.col) {
+            console.log("No row or column in drop_piece_ressponse");
+            break;
+          }
+
+          RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == player_1_id ? COLORS[0] : COLORS[1] ));
           break;
 
         case 'board_state':
+          // Real time state update
+          RealTimeState.current!.active_player = jsonData.active_player;
+          RealTimeState.current!.player_1_id = jsonData.user_1_id;
+          RealTimeState.current!.player_2_id = jsonData.user_2_id;
+          RealTimeState.current!.pieces = jsonData.board_state!.map((value, index) => {
+            if (!value) return null;
+            let row = Math.floor(index / COLS)
+            let col = index % COLS
+
+            return new Piece(row, col, value == jsonData.user_1_id ? COLORS[0] : COLORS[1]);
+          })
+          
           // update visual state here
-          setViewModel(jsonData.newBoardState);
+          setViewModel((prev) => {
+            game_id: prev.game_id
+            active_player: 
+          });
           break;
 }
     });

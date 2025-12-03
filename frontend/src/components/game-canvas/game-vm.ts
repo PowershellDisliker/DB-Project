@@ -17,13 +17,17 @@ export class Piece {
 }
 
 export interface SlowState {
-    gameId: string;
-    startTime: Date;
-    currentPlayer: boolean;
+    game_id: string | null;
+    active_player: boolean | null;
 }
 
 export interface RealTimeState {
-    pieces: Piece[];
-    currentPlayer: string;
+    pieces: (Piece | null)[];
+    
+    player_1_id: string | null;
+    player_2_id: string | null;
+
+    active_player: string | null;
+
     gameActive: boolean;
 }
