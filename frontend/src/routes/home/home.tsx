@@ -98,6 +98,11 @@ function Home() {
         navigate(`/game?game_id=${response.game_id}`)
     };
 
+    
+    const addFriendHandler = async () => {
+
+    }
+
 
     return (
         <div className={`${globalStyles.row} ${globalStyles.globalCenter} ${homeStyles.mainContainer}`}>
@@ -110,10 +115,14 @@ function Home() {
                 <ul>
                     {viewModel.friends?.map((value) => {
                         return (
-                            <Friend username={value.username} online={value.online} key={value.username}/>
+                            <Friend username={value.username} online={value.online}/>
                         )
                     })}
                 </ul>
+                <div className={`${globalStyles.column}`}>
+                    <input type="text" />
+                    <button onClick={addFriendHandler}>Add Friend</button>
+                </div>
             </div>
 
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter} ${homeStyles.centerContainer} ${globalStyles.spaceBetween}`}>
@@ -129,7 +138,9 @@ function Home() {
                         )
                     })}
                 </ul>
-                <button className={`${homeStyles.createGameButton}`} onClick={createGameHandler}>Create Game</button>
+                <form>
+                    <button onClick={createGameHandler}>Create Game</button>
+                </form>
             </div>
 
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
