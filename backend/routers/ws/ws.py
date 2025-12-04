@@ -77,7 +77,7 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
             response.command_type == "drop_piece_response" and response.success:
                 
                 # After a successful registration or piece drop, broadcast the full board state
-                board_state_response = game_multiplexer.__get_board_state_response(initial_request.game_id)
+                board_state_response = game_multiplexer._get_board_state_response(initial_request.game_id)
                 await broadcast(initial_request.game_id, board_state_response.model_dump_json())
 
     except WebSocketDisconnect:
@@ -105,7 +105,7 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
                     
                     # For a quick fix, let's just make the call robust:
                     if game_id in game_multiplexer.games: # Re-check existence after disconnect
-                        board_state_response = game_multiplexer.__get_board_state_response(game_id)
+                        board_state_response = game_multiplexer._get_board_state_response(game_id)
                         await broadcast(game_id, board_state_response.model_dump_json())
 
             if ws in rooms.get(game_id, set()): # Use .get() defensively here too

@@ -15,7 +15,7 @@ class GameMultiplexer:
         )
 
 
-    def __get_board_state_response(self, game_id: uuid.UUID) -> WebsocketOutgoingCommand:
+    def _get_board_state_response(self, game_id: uuid.UUID) -> WebsocketOutgoingCommand:
         board_state: BoardState = self.games[game_id].get_board_state()
 
         return WebsocketOutgoingCommand(
@@ -57,7 +57,7 @@ class GameMultiplexer:
             self.games[request.game_id] = new_game
             game = new_game
 
-        return self.__get_board_state_response(request.game_id)
+        return self._get_board_state_response(request.game_id)
 
 
     # In GameMultiplexer
@@ -125,12 +125,12 @@ class GameMultiplexer:
 
                 if not success:
                     return self.__get_error_response("Error registering user")
-                return self.__get_board_state_response(request.game_id)
+                return self._get_board_state_response(request.game_id)
 
             case "get_board_state":
                 if request.game_id is None:
                     return self.__get_error_response("game_id is missing from get_board_state request")
-                return self.__get_board_state_response(request.game_id)
+                return self._get_board_state_response(request.game_id)
             
             case _:
                 return self.__get_error_response("malformed websocket request")
