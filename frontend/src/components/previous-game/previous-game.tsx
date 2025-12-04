@@ -1,4 +1,4 @@
-import type { PreviousGameProps } from "../../common/types";
+import type { PreviousGameProps } from "../../dto/types";
 
 function PreviousGame(props: PreviousGameProps) {
 

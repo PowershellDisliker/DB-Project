@@ -104,7 +104,7 @@ class DBClient:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """
-        result = self.__run_query("SELECT PassHash FROM Users WHERE Username = :username", {"username": user})
+        result = self.__run_query("""SELECT "ID", "PassHash", "Username" FROM "Users" WHERE "Username" = :username""", {"username": user})
 
         if not result:
             return None
@@ -129,7 +129,7 @@ class DBClient:
         try:
             identity = uuid.uuid4()
 
-            result = self.__run_exec("INSERT INTO Users (ID, Username, PassHash, Online) VALUES (:id, :uname, :passhash, :online)",
+            result = self.__run_exec("""INSERT INTO "Users" ("ID", "Username", "PassHash", "Online") VALUES (:id, :uname, :passhash, :online)""",
                 {"id": identity, "uname": user, "passhash": hashed, "online": True})
 
             if result.rowcount <= 0:
@@ -147,7 +147,7 @@ class DBClient:
 
 
     def get_public_user(self, identity: uuid.UUID) -> DB_User | None:
-        result = self.__run_query("SELECT Username, Online FROM Users WHERE ID = :identity", {"identity": identity})
+        result = self.__run_query("""SELECT "Username", "Online" FROM "Users" WHERE "ID" = :identity""", {"identity": identity})
 
         if not result:
             return None
@@ -160,7 +160,7 @@ class DBClient:
 
 
     def get_private_user(self, user_id: uuid.UUID) -> DB_User | None:
-        result = self.__run_query("SELECT Username, PassHash, Online FROM Users WHERE ID = :identity", {"identity": user_id})
+        result = self.__run_query("""SELECT "Username", "PassHash", "Online" FROM "Users" WHERE "ID" = :identity""", {"identity": user_id})
 
         if not result:
             return None
@@ -174,7 +174,7 @@ class DBClient:
 
 
     def post_token(self, user_id: uuid.UUID, token: str) -> bool:
-        result = self.__run_exec("INSERT INTO ActiveTokens (Token, UserID) VALUES (:token, :user)", {"token": token, "user": user_id})
+        result = self.__run_exec("""INSERT INTO "ActiveTokens" ("Token", "UserID") VALUES (:token, :user)""", {"token": token, "user": user_id})
 
         if result.rowcount <= 0:
             return False
@@ -182,7 +182,7 @@ class DBClient:
 
 
     def get_token(self, user_id: uuid.UUID, token: str) -> bool:
-        result = self.__run_query("SELECT * FROM ActiveTokens WHERE UserID = :id AND Token = :tok", {"id": user_id, "tok": token})
+        result = self.__run_query("""SELECT * FROM "ActiveTokens" WHERE "UserID" = :id AND "Token" = :tok""", {"id": user_id, "tok": token})
 
         if not result:
             return False
@@ -192,7 +192,7 @@ class DBClient:
     def post_open_game(self, user_1_id: uuid.UUID) -> DB_OpenGame | None:
         game_id = uuid.uuid4()
 
-        result = self.__run_exec("INSERT INTO OpenGames (ID, User1ID) VALUES (:id, :user1)", 
+        result = self.__run_exec("""INSERT INTO "OpenGames" ("ID", "User1ID") VALUES (:id, :user1)""", 
             {"id": game_id, "user1": user_1_id})
 
         if result.rowcount <= 0:
@@ -205,7 +205,7 @@ class DBClient:
 
 
     def get_open_games(self) -> list[DB_OpenGame] | None:
-        result = self.__run_query("SELECT * FROM OpenGames")
+        result = self.__run_query("""SELECT * FROM "OpenGames" """)
 
         if not result:
             return None
@@ -222,19 +222,19 @@ class DBClient:
 
 
     def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID) -> DB_ClosedGame | None:
-        result = self.__run_query("SELECT * FROM OpenGames where ID = :id", {"id": game_id})
+        result = self.__run_query("""SELECT * FROM "OpenGames" where "ID" = :id""", {"id": game_id})
 
         if not result:
             return None
 
-        insert_result = self.__run_exec("INSERT INTO ClosedGames (ID, User1ID, User2ID, StartTime, Winner) VALUES (:id, :user1id, :user2id, :starttime, :winner)",
+        insert_result = self.__run_exec("""INSERT INTO "ClosedGames" ("ID", "User1ID", "User2ID", "StartTime", "Winner") VALUES (:id, :user1id, :user2id, :starttime, :winner)""",
             {"id": result[0].ID, "user1id": result[0].User1ID, "user2id": result[0].User2ID, "starttime": result[0].StartTime, "winner": winner_id}
         )
 
         if insert_result.rowcount <= 0:
             return None
 
-        delete_result = self.__run_exec("DELETE FROM OpenGames WHERE ID = :id", {"id": game_id})
+        delete_result = self.__run_exec("""DELETE FROM "OpenGames" WHERE "ID" = :id""", {"id": game_id})
 
         if delete_result.rowcount <= 0:
             return None
@@ -249,7 +249,7 @@ class DBClient:
 
 
     def get_closed_games(self, identity: str) -> list[DB_ClosedGame] | None:
-        result = self.__run_query("SELECT * FROM ClosedGames WHERE User1ID = :id OR User2ID = :id", {"id": identity})
+        result = self.__run_query("""SELECT * FROM "ClosedGames" WHERE "User1ID" = :id OR "User2ID" = :id""", {"id": identity})
 
         if not result:
             return None
@@ -267,7 +267,7 @@ class DBClient:
 
 
     def post_friend(self, user1id: uuid.UUID, user2id: uuid.UUID) -> bool:
-        result = self.__run_exec("INSERT INTO Friends (ID1, ID2, Accepted) VALUES (:id1, :id2, FALSE)", {"id1": user1id, "id2": user2id})
+        result = self.__run_exec("""INSERT INTO "Friends" ("ID1", "ID2", "Accepted") VALUES (:id1, :id2, FALSE)""", {"id1": user1id, "id2": user2id})
 
         if result.rowcount <= 0:
             return False
@@ -275,7 +275,7 @@ class DBClient:
 
 
     def get_friends(self, identity: uuid.UUID) -> list[DB_Friend] | None:
-        result = self.__run_query("SELECT * FROM Friends WHERE ID1 = :id OR ID2 = :id", {"id": identity})
+        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID1" = :id OR "ID2" = :id""", {"id": identity})
 
         if not result:
             return None
@@ -289,7 +289,7 @@ class DBClient:
 
 
     def post_message(self, sender: uuid.UUID, recipient: uuid.UUID, message: str) -> bool:
-        result = self.__run_exec("INSERT INTO Messages (ID, SenderID, RecipientID, Message) VALUES (:id, :si, :ri, :m)", 
+        result = self.__run_exec("""INSERT INTO "Messages" ("ID", "SenderID", "RecipientID", "Message") VALUES (:id, :si, :ri, :m)""", 
             {"id": uuid.uuid4(), "si": sender, "ri": recipient, "m": message}
         )
 
@@ -299,7 +299,7 @@ class DBClient:
 
 
     def get_messages(self, inbox_owner: uuid.UUID, external_contact: uuid.UUID) -> list[DB_Message] | None:
-        result = self.__run_query("SELECT ID, Message, TimeStamp FROM Messages WHERE SenderID = :io AND RecipientID = :ec", 
+        result = self.__run_query("""SELECT "ID", "Message", "TimeStamp" FROM "Messages" WHERE "SenderID" = :io AND "RecipientID" = :ec""", 
             {"io": inbox_owner, "ec": external_contact}
         )
 

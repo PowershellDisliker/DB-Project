@@ -9,4 +9,5 @@ class AuthRequest(BaseModel):
 # Generic Response
 class AuthResponse(BaseModel):
     success: bool
-    token: str | None
+    token: str | None = None
+    user_id: uuid.UUID | None = None

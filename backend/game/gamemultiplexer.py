@@ -1,12 +1,12 @@
-from game import ConnectFourBoard
+from fastapi import WebSocket
+from .game import ConnectFourBoard
 from typing import Tuple
-from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState
+from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse
 import uuid
 
 
 class GameMultiplexer:
     games: dict[uuid.UUID, ConnectFourBoard] = {}
-
 
     def __get_error_response(self, msg: str) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
@@ -23,22 +23,31 @@ class GameMultiplexer:
             board_state=board_state.positions,
             user_1_id=board_state.user_1_id,
             user_2_id=board_state.user_2_id,
+            winner_id=board_state.winner_id,
             active_player=board_state.active_player
         )
 
-    
-    def __get_register_response(self, success: bool) -> WebsocketOutgoingCommand:
+
+    def __get_register_response(self, success: bool, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
             command_type="register_response",
-            register_response=success
+            user_1_id=user_1_id,
+            user_2_id=user_2_id,
+            success=success
         )
 
-    
-    def __get_drop_piece_response(self, result: Tuple[bool, uuid.UUID | None]) -> WebsocketOutgoingCommand:
+
+    def __get_drop_piece_response(self, game_response: DropPieceResponse) -> WebsocketOutgoingCommand:
+        if game_response.coords is None:
+            return self.__get_error_response("No position included in drop_piece_response from server")
+        
         return WebsocketOutgoingCommand(
             command_type="drop_piece_response",
-            success=result[0],
-            winner=result[1]
+            success=game_response.success,
+            winner_id=game_response.winner_id,
+            row=game_response.coords[0],
+            col=game_response.coords[1],
+            next_active_player_id=game_response.next_active_player_id,
         )
 
 
@@ -99,7 +108,10 @@ class GameMultiplexer:
 
                 # Register the user and send the response
                 success: bool = game.register_player(request.user_id)
-                return self.__get_register_response(success)
+                users = game.get_players()
+                user_1_id: uuid.UUID | None = users[0]
+                user_2_id: uuid.UUID | None = users[1]
+                return self.__get_register_response(success, user_1_id, user_2_id)
 
             case "get_board_state":
                 if request.game_id is None:

@@ -12,10 +12,10 @@ class Config:
         load_dotenv()
 
         # Extract Variables
-        self.SECRET_KEY = os.getenv("SECRET_KEY")
-        self.POSTGRES_URL = os.getenv("POSTGRES_URL")
-        self.POSTGRES_DB_NAME = os.getenv("POSTGRES_DB_NAME")
-        self.JWT_ALGO = os.getenv("JWT_ALGO")
+        self.SECRET_KEY = os.getenv("SECRET_KEY", "")
+        self.POSTGRES_URL = os.getenv("POSTGRES_URL", "")
+        self.POSTGRES_DB_NAME = os.getenv("POSTGRES_DB_NAME", "")
+        self.JWT_ALGO = os.getenv("JWT_ALGO", "")
 
         # Check for presence of required variables
         self.__check_required()
@@ -30,6 +30,6 @@ class Config:
         ]
 
         for value in required:
-            if value == None:
+            if value == "":
                 raise ValueError("Missing required environment variables")
 

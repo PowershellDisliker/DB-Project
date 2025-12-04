@@ -1,5 +1,5 @@
 from typing import Tuple
-from dto import BoardState
+from dto import BoardState, DropPieceResponse
 import uuid
 
 # Holup
@@ -12,6 +12,7 @@ class ConnectFourBoard:
         self.user_2_id: uuid.UUID | None = user_2_id
 
         self.active_player: uuid.UUID | None = user_1_id
+        self.winner_id: uuid.UUID | None = None
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 
@@ -33,7 +34,8 @@ class ConnectFourBoard:
         return False
 
 
-    def drop_piece(self, piece_owner: uuid.UUID, col: int) -> Tuple[bool, uuid.UUID | None]:
+    # Maybe make composite data type for return value?
+    def drop_piece(self, piece_owner: uuid.UUID, col: int) -> DropPieceResponse:
         """
         Attempts to drop a connect 4 piece into the board at a specific column.
 
@@ -41,19 +43,27 @@ class ConnectFourBoard:
         """
         # Only allow if both players are present
         if self.user_1_id is None or self.user_2_id is None:
-            return (False, None)
+            return DropPieceResponse(
+                success=False
+            )
 
         # If the player placing the piece isn't currently in the game
         if piece_owner != self.user_1_id and piece_owner != self.user_2_id:
-            return (False, None)
+            return DropPieceResponse(
+                success=False
+            )
 
         # If we're outside of the bounds
         if col < 0 or col >= COL_COUNT:
-            return (False, None)
+            return DropPieceResponse(
+                success=False
+            )
 
         # If the active player isn't the piece_owner
         if self.active_player != piece_owner:
-            return (False, None)
+            return DropPieceResponse(
+                success=False
+            )
 
         last_available_row = None
         
@@ -65,7 +75,9 @@ class ConnectFourBoard:
 
         # Return if column is full
         if last_available_row is None:
-            return (False, None)
+            return DropPieceResponse(
+                success=False
+            )
 
         # Place the piece
         new_piece_index: int = self.__get_index(last_available_row, col)
@@ -76,8 +88,16 @@ class ConnectFourBoard:
 
         if winner is None:
             self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
-            return (True, None)
-        return (True, winner)
+            return DropPieceResponse(
+                success=True,
+                coords=(last_available_row, col)
+            )
+        self.winner_id = winner
+        return DropPieceResponse(
+            success=True,
+            winner_id=winner,
+            coords=(last_available_row, col)
+        )
 
 
     def get_board_state(self) -> BoardState:
@@ -85,7 +105,8 @@ class ConnectFourBoard:
             user_1_id=self.user_1_id,
             user_2_id=self.user_2_id,
             positions=self.positions,
-            active_player=self.active_player
+            active_player=self.active_player,
+            winner_id=self.winner_id
         )
 
 

@@ -1,30 +1,30 @@
-import { ConfigContext } from "./config";
+import { ConfigContext, type Config, AuthContext} from "./context";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Login } from "./login";
-import { Home } from "./home";
-import { Game } from "./game";
-
-interface Config {
-  BACKEND_URL: string
-  API_KEY: string
-}
+import { useMemo, useState } from "react";
+import { Login, Home, Game } from "./routes";
 
 function App() {
 
-  let configuration: Config = {
-    BACKEND_URL: import.meta.env.BACKEND_URL,
-    API_KEY: import.meta.env.API_KEY,
-  }
+  let configuration: Config = useMemo(() => ({
+    BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+    API_KEY: import.meta.env.VITE_API_KEY,
+    BACKEND_WS_URL: import.meta.env.VITE_BACKEND_WS_URL,
+  }), [])
+
+  const [token, setToken] = useState<string | null>(null);
+  const [user_id, setUserId] = useState<string | null>(null);
 
   return (
     <ConfigContext.Provider value={configuration}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/home" element={<Home/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/game" element={<Game />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthContext.Provider value={{token, setToken, user_id, setUserId}}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/home" element={<Home/>}/>
+            <Route path="/login" element={<Login/>}/>
+            <Route path="/game" element={<Game />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthContext.Provider>
     </ConfigContext.Provider>
   )
 }

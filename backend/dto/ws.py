@@ -18,12 +18,16 @@ class WebsocketOutgoingCommand(BaseModel):
     
     error: str | None = None
     
+    user_id: str | None = None
+
     user_1_id: uuid.UUID | None = None
     user_2_id: uuid.UUID | None = None
     board_state: list[uuid.UUID | None] | None = None
     active_player: uuid.UUID | None = None
+    next_active_player_id: uuid.UUID | None = None
 
-    register_response: bool | None = None
+    row: int | None = None
+    col: int | None = None
     
     success: bool | None = None
-    winner: uuid.UUID | None = None
+    winner_id: uuid.UUID | None = None
