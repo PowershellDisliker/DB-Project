@@ -138,9 +138,7 @@ function Home() {
                         )
                     })}
                 </ul>
-                <form>
-                    <button onClick={createGameHandler}>Create Game</button>
-                </form>
+                <button onClick={createGameHandler}>Create Game</button>
             </div>
 
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
