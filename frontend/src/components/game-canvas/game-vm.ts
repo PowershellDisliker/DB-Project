@@ -1,26 +1,20 @@
-const PIECE_RADIUS = 30;
-
 export class Piece {
     row: number;
     col: number;
 
     yPos: number;
-    targetY: number;
 
     dy: number;
 
     color: string;
 
-    constructor(row: number, col: number, color: string) {
+    constructor(row: number, col: number, color: string, isStatic: boolean) {
         this.row = row;
         this.col = col;
         this.color = color;
 
         // Start above column
-        this.yPos = -80;
-        
-        // Where the piece should stop
-        this.targetY = row * PIECE_RADIUS * 2;
+        this.yPos = isStatic ? 0 : -80;
 
         // Initial velocity
         this.dy = 0;

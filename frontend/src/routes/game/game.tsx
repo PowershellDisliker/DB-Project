@@ -15,10 +15,10 @@ function Game() {
 
     return (
         <div className={gameStyles.gameBorder}>
-            <div className={`${globalStyles.centerContainer} ${globalStyles.roundedContainer}`}>
+            <div className={`${globalStyles.center} ${globalStyles.roundedContainer}`}>
                 <GameCanvas game_id={searchParams.get("game_id")}/>
             </div>
-            <button onClick={exitHandler}>Exit</button>
+          <button onClick={exitHandler}>Exit</button>
         </div>
     )
 }
