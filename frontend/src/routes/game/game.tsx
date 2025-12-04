@@ -1,15 +1,15 @@
-import React, {useState} from "react";
-import type { GameViewModel } from "./game-vm";
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import {GameCanvas} from '../../components/game-canvas';
 import globalStyles from "../../global.module.css";
 
 function Game() {
 
-    const [viewModel, setViewModel] = useState<GameViewModel>()
+    const [searchParams, setSearchParams] = useSearchParams();
 
     return (
         <div className={`${globalStyles.centerContainer}`}>
-            <GameCanvas />
+            <GameCanvas game_id={searchParams.get("game_id")}/>
         </div>
     )
 }

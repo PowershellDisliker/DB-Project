@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
 import { AuthContext, ConfigContext } from '../../context';
 import { Piece } from './game-vm';
-import type { WebsocketRequest, WebsocketResponse } from '../../dto';
+import type { WebsocketGameRequest, WebsocketRequest, WebsocketResponse } from '../../dto';
 
 // CONSTANTS MOVE TO CONFIG?
 const HorizontalAspectRatio = 16;
@@ -94,20 +94,16 @@ function GameCanvas({game_id}: CanvasProps) {
 
   // Websocket Effect
   useEffect(() => {
+    if (!game_id || !auth.token) return;
     ws.current = new WebSocket(config!.BACKEND_WS_URL!);
 
-    // OnOpen
-    ws.current.addEventListener('open', async (event: Event) => {
-      ws.current!.send(JSON.stringify({
-        command_type: 'get_board_state',
-        game_id: game_id,
-        user_id: auth.user_id,
-      } as WebsocketRequest));
 
+    // OnOpen
+    ws.current!.addEventListener('open', async (event: Event) => {
       ws.current!.send(JSON.stringify({
-        command_type: 'register_user',
-        user_id: auth.user_id,
-      } as WebsocketRequest))
+        jwt: auth.token,
+        game_id: game_id,
+      } as WebsocketGameRequest));
     });
 
     // in-loop
@@ -177,14 +173,13 @@ function GameCanvas({game_id}: CanvasProps) {
 
     // OnClose
     ws.current.addEventListener('close', () => {
-      console.log('Disconnected from ws backend');
     });
 
     // Cleanup
     return () => {
       ws.current?.close();
     };
-  }, []);
+  }, [config?.BACKEND_WS_URL, auth?.token, game_id]);
 
   const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!viewModel.active_player || !viewModel.game_running) return;

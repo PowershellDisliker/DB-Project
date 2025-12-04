@@ -1,3 +1,3 @@
-import OpenGame from "./open-game";
+import OpenGameComp from "./open-game";
 
-export {OpenGame};
+export {OpenGameComp};

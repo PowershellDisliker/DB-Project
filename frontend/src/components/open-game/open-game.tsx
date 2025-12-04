@@ -1,14 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import type { OpenGameProps } from '../../dto/types';
+import type { OpenGame } from '../../dto/opengame';
+import globalStyles from '../../global.module.css';
 
-function OpenGame(props: OpenGameProps) {
+function OpenGameComp({game_id, user_1_id}: OpenGame) {
+
+    const navigator = useNavigate();
+
+    const joinGame = () => {
+        navigator(`/game?game_id=${game_id}`);
+    }
 
     return (
-        <div>
-            <h2>I'm an open game!</h2>
+        <div className={globalStyles.roundedContainer}>
+            <button onClick={joinGame}>
+                <p>Player: {user_1_id}</p>
+            </button>
         </div>
     )
 }
 
-export default OpenGame;
+export default OpenGameComp;

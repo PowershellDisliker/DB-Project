@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from config import Config
 from dependencies import get_config, get_multiplexer
@@ -28,9 +29,8 @@ async def broadcast(game_id: uuid.UUID, message: str):
         rooms[game_id].remove(client)
 
 
-@router.websocket("/ws")
+@router.websocket("/")
 async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), game_multiplexer: GameMultiplexer = Depends(get_multiplexer)) -> None:
-
     await ws.accept()
 
     payload = None

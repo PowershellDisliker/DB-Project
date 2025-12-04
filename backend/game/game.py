@@ -12,7 +12,7 @@ class ConnectFourBoard:
         self.user_2_id: uuid.UUID | None = user_2_id
 
         self.active_player: uuid.UUID | None = user_1_id
-        self.winner_id: uuid.UUID | None
+        self.winner_id: uuid.UUID | None = None
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 

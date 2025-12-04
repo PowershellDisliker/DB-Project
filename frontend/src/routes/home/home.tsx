@@ -2,13 +2,13 @@ import React, {useState, useEffect, useContext} from "react";
 import { jwtDecode } from "jwt-decode";
 
 import { ConfigContext, AuthContext } from "../../context";
-import type { C4JWT, GetPublicUserResponse } from "../../dto";
+import type { C4JWT, GetPublicUserResponse, PostOpenGamesResponse } from "../../dto";
 
 import { LoadingIcon } from '../../components/loading';
 import { Friend } from '../../components/friend';
-import { OpenGame } from "../../components/open-game";
+import { OpenGameComp } from "../../components/open-game";
 import { PreviousGame } from "../../components/previous-game";
-import { getPublicUser, getOpenGames, getFriends } from "../../api";
+import { getPublicUser, getOpenGames, getFriends, postOpenGame } from "../../api";
 
 import globalStyles from "../../global.module.css";
 import homeStyles from "./home.module.css";
@@ -28,6 +28,8 @@ function Home() {
         open_games: null,
         closed_games: null,
         user_details: null,
+
+        failed_to_create_game: false,
     });
 
     useEffect(() => {
@@ -80,6 +82,22 @@ function Home() {
         fetchData();
     }, [user_id]);
 
+    const createGameHandler = async () => {
+        if (!token) return;
+
+        const response: PostOpenGamesResponse = await postOpenGame(config.BACKEND_URL, token);
+
+        if (!response.success) {
+            setViewModel((prev) => ({
+                ...prev,
+                failed_to_create_game: true,
+            }))
+            return;
+        }
+
+        navigate(`/game?game_id=${response.game_id}`)
+    };
+
 
     return (
         <div className={`${globalStyles.row} ${globalStyles.globalCenter} ${homeStyles.mainContainer}`}>
@@ -88,7 +106,7 @@ function Home() {
                 <div>
                     <h1>Friends List</h1>
                 </div>
-                {viewModel.friends && <LoadingIcon/>}
+                {viewModel.friends == null && <LoadingIcon/>}
                 <ul>
                     {viewModel.friends?.map((value) => {
                         return (
@@ -103,21 +121,22 @@ function Home() {
                     <h1>Hello {viewModel.user_details?.username}!</h1>
                     <h3>Open Server / Lobby List</h3>
                 </div>
-                {viewModel.open_games && <LoadingIcon/>}
+                {viewModel.open_games == null && <LoadingIcon/>}
                 <ul>
                     {viewModel.open_games?.games?.map((value) => {
                         return (
-                            <OpenGame id={value.game_id} />
+                            <OpenGameComp game_id={value.game_id} can_join={value.can_join} user_1_id={value.user_1_id}/>
                         )
                     })}
                 </ul>
+                <button className={`${homeStyles.createGameButton}`} onClick={createGameHandler}>Create Game</button>
             </div>
 
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
                 <div>
                     <h1>Player Stats</h1>
                 </div>
-                {viewModel.user_details && <LoadingIcon/>}
+                {viewModel.user_details == null && <LoadingIcon/>}
                 <ul>
                     {viewModel?.closed_games?.games?.map((value) => {
                         return (

@@ -6,3 +6,13 @@
 .centerContainer {
     width: 50%;
 }
+
+.createGameButton {
+    transition: background-color 0.1s ease-in-out;
+    background-color: var(--muted-blue);
+}
+
+.createGameButton:hover {
+    background-color: var(--muted-green);
+    cursor: pointer;
+}
