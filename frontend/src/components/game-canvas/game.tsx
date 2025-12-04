@@ -45,6 +45,7 @@ function GameCanvas({game_id}: CanvasProps) {
     // sub-component references
     const ws = useRef<WebSocket>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const currentFrame = useRef<number>(null);
     
     // Animation Effect
     useEffect(() => {
@@ -82,12 +83,12 @@ function GameCanvas({game_id}: CanvasProps) {
       });
     //   gc.drawImage(imageMask, 0, 0);
 
-            requestAnimationFrame(drawFrame);
+      currentFrame.current = requestAnimationFrame(drawFrame);
     };
 
-    let animationID = requestAnimationFrame(drawFrame);
+    currentFrame.current = requestAnimationFrame(drawFrame);
         return () => {
-      cancelAnimationFrame(animationID);
+      cancelAnimationFrame(currentFrame.current!);
     };
   }, []);
 
@@ -97,13 +98,13 @@ function GameCanvas({game_id}: CanvasProps) {
 
     // OnOpen
     ws.current.addEventListener('open', async (event: Event) => {
-      await ws.current!.send(JSON.stringify({
+      ws.current!.send(JSON.stringify({
         command_type: 'get_board_state',
         game_id: game_id,
         user_id: auth.user_id,
       } as WebsocketRequest));
 
-      await ws.current!.send(JSON.stringify({
+      ws.current!.send(JSON.stringify({
         command_type: 'register_user',
         user_id: auth.user_id,
       } as WebsocketRequest))
@@ -192,7 +193,7 @@ function GameCanvas({game_id}: CanvasProps) {
     const x = e.clientX - rect.left;
 
 
-    if (x < margin / 2 || x > margin / 2 + (canvasRef.current!.width - margin)) return;
+    if (x < 0 || x > canvasRef.current!.width - margin) return;
 
     const columnWidth = (canvasRef.current!.width - margin) / COLS;
     const pieceCol = Math.floor((x - (margin / 2)) / columnWidth);

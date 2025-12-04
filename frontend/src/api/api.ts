@@ -8,6 +8,7 @@ import {
 } from "../dto";
 
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
+
     const res = await fetch(
         backend_url + route,
         {
@@ -21,7 +22,7 @@ async function postBackend<T>(backend_url: string, route: string, request: unkno
     )
 
     if (!res.ok) {
-        throw new Error(`Error Contacting backend: ${res.status}`);
+        throw new Error(`${backend_url}${route}: ${res.status}`);
     }
 
     const jsonData = await res.json();
@@ -42,7 +43,7 @@ async function getBackend<T>(backend_url: string, route: string, jwt: string | n
     )
 
     if (!res.ok) {
-        throw new Error(`Error Contacting backend: ${res.status}`);
+        throw new Error(`${backend_url}${route}: ${res.status}`);
     }
 
     const jsonData = await res.json();

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from db import DBClient
-from app.dependencies import get_db, get_current_user_id
+from dependencies import get_db, get_current_user_id
 from dto import GetFriendResponse, PostFriendRequest, PostFriendResponse
 
 router = APIRouter(
@@ -9,7 +9,7 @@ router = APIRouter(
 
 @router.get("/friends")
 async def get_friends(user = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetFriendResponse:
-    data = db.get_friends(user.user_id)
+    data = db.get_friends(user)
 
     if data is None:
         return GetFriendResponse(

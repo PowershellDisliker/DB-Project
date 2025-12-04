@@ -10,5 +10,5 @@ export interface AuthResponse {
 }
 
 export interface C4JWT {
-    su: string;
+    sub: string;
 }

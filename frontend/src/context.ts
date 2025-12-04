@@ -14,5 +14,5 @@ export interface AuthState {
   setUserId: (t: string | null) => void;
 }
 
-export const ConfigContext = createContext<Config>({} as Config);
-export const AuthContext = createContext<AuthState>({} as AuthState)
+export const ConfigContext = createContext<Config>(null!);
+export const AuthContext = createContext<AuthState>(null!);

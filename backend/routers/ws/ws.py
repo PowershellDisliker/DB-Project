@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from config import Config
-from app.dependencies import get_config, get_multiplexer
+from dependencies import get_config, get_multiplexer
 from game import GameMultiplexer
 from dto import WebsocketGameRequest, WebsocketIncomingCommand, WebsocketOutgoingCommand
 import jwt

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from db import DBClient
-from app.dependencies import get_db, get_current_user_id
+from dependencies import get_db, get_current_user_id
 from dto import GetPublicUserDataResponse, GetPrivateUserDataResponse
 import uuid
 
@@ -9,8 +9,8 @@ router = APIRouter(
 )
 
 @router.get("/user/public")
-async def public_user_data(user_query_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
-    data = db.get_public_user(uuid.UUID(user_query_id))
+async def public_user_data(query_user_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPublicUserDataResponse:
+    data = db.get_public_user(uuid.UUID(query_user_id))
 
     if data is None:
         return GetPublicUserDataResponse()
@@ -22,8 +22,8 @@ async def public_user_data(user_query_id: str, user_id: uuid.UUID = Depends(get_
 
 
 @router.get("/user/private")
-async def get_user_data(user_query_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
-    data = db.get_private_user(uuid.UUID(user_query_id))
+async def get_user_data(query_user_id: str, user_id: uuid.UUID = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetPrivateUserDataResponse:
+    data = db.get_private_user(uuid.UUID(query_user_id))
 
     if data is None:
         return GetPrivateUserDataResponse()

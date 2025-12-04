@@ -29,7 +29,7 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> HTTPExcept
     except jwt.InvalidTokenError:
         raise credentials_exception
         
-    identity: uuid.UUID = uuid.UUID(payload.get("su"))
+    identity: uuid.UUID = uuid.UUID(payload.get("sub"))
 
     return identity
 

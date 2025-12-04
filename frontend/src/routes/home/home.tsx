@@ -10,7 +10,7 @@ import { OpenGame } from "../../components/open-game";
 import { PreviousGame } from "../../components/previous-game";
 import { getPublicUser, getOpenGames, getFriends } from "../../api";
 
-import globalStyles from "../global.module.css";
+import globalStyles from "../../global.module.css";
 import homeStyles from "./home.module.css";
 
 import type { HomeViewModel } from "./home-vm";
@@ -18,17 +18,11 @@ import { useNavigate } from "react-router-dom";
 
 function Home() {
     const navigate = useNavigate();
-
+    
     const config = useContext(ConfigContext);
     const {token} = useContext(AuthContext);
-
-    if (!token) {
-        navigate("/login")
-        return;
-    }
-
-    const user_id: string = jwtDecode<C4JWT>(token).su;
-
+    
+    const [user_id, setUserId] = useState<string | null>(null);
     const [viewModel, setViewModel] = useState<HomeViewModel>({
         friends: null,
         open_games: null,
@@ -36,8 +30,32 @@ function Home() {
         user_details: null,
     });
 
+    useEffect(() => {
+        if (!token) {
+            return;
+        }
+    
+        try {
+            const sub: string = jwtDecode<C4JWT>(token).sub;
+
+            if (typeof sub !== "string") {
+                throw new Error("Invalid JWT Payload: missing sub");
+            }
+
+            setUserId(sub)
+        }
+
+        catch (err) {
+            console.error("JWT Decode Error:", err);
+            navigate("/login");
+        }
+    
+    }, [token]);
+
 
     useEffect(() => {
+        if (!user_id || !token) return;
+
         const fetchData = async () => {
             const userDetails = await getPublicUser(config.BACKEND_URL, token, user_id);
             const openGames = await getOpenGames(config.BACKEND_URL, token);
@@ -45,8 +63,10 @@ function Home() {
 
             let friends_details: Array<GetPublicUserResponse> = []
 
-            for (const value of friends.friend_ids!) {
-                friends_details.push(await getPublicUser(config.BACKEND_URL, token ,value[0]));
+            if (friends.friend_ids) {
+                for (const value of friends.friend_ids) {
+                    friends_details.push(await getPublicUser(config.BACKEND_URL, token ,value[0]));
+                }
             }
 
             setViewModel(prev => ({
@@ -58,7 +78,7 @@ function Home() {
         };
 
         fetchData();
-    }, []);
+    }, [user_id]);
 
 
     return (
@@ -68,9 +88,9 @@ function Home() {
                 <div>
                     <h1>Friends List</h1>
                 </div>
-                {!viewModel.friends && <LoadingIcon/>}
+                {viewModel.friends && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.friends?.map((value) => {
+                    {viewModel.friends?.map((value) => {
                         return (
                             <Friend username={value.username} online={value.online}/>
                         )
@@ -80,12 +100,12 @@ function Home() {
 
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.globalCenter} ${homeStyles.centerContainer} ${globalStyles.spaceBetween}`}>
                 <div>
-                    <h1>Hello User!</h1>
+                    <h1>Hello {viewModel.user_details?.username}!</h1>
                     <h3>Open Server / Lobby List</h3>
                 </div>
-                {!viewModel.open_games && <LoadingIcon/>}
+                {viewModel.open_games && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.open_games?.games.map((value) => {
+                    {viewModel.open_games?.games?.map((value) => {
                         return (
                             <OpenGame id={value.game_id} />
                         )
@@ -97,9 +117,9 @@ function Home() {
                 <div>
                     <h1>Player Stats</h1>
                 </div>
-                {!viewModel.user_details && <LoadingIcon/>}
+                {viewModel.user_details && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.closed_games?.games.map((value) => {
+                    {viewModel?.closed_games?.games?.map((value) => {
                         return (
                             <PreviousGame id={value.game_id} />
                         )

@@ -12,10 +12,11 @@ function App() {
   }), [])
 
   const [token, setToken] = useState<string | null>(null);
+  const [user_id, setUserId] = useState<string | null>(null);
 
   return (
     <ConfigContext.Provider value={configuration}>
-      <AuthContext.Provider value={{token, setToken}}>
+      <AuthContext.Provider value={{token, setToken, user_id, setUserId}}>
         <BrowserRouter>
           <Routes>
             <Route path="/home" element={<Home/>}/>

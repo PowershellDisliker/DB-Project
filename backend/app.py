@@ -1,8 +1,7 @@
-import jwt
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth_router, closedgame_router, friend_router, message_router, opengame_router, user_router, ws_router
+from routers import auth_router, closedgame_router, friend_router, message_router, opengame_router, user_router, ws_router
 from dto import *
 
 

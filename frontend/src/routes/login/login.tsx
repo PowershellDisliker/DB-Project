@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import {useNavigate} from "react-router-dom";
 import { ConfigContext, AuthContext } from "../../context";
 import loginStyles from "./login.module.css";
-import globalStyles from "../global.module.css";
+import globalStyles from "../../global.module.css";
 import { type loginViewModel } from "./login-vm";
 import { attemptLogin, attemptRegister } from "../../api";
 import type { AuthResponse } from "../../dto";
@@ -39,7 +39,7 @@ function Login() {
     };
 
     const loginHandler = async () => {
-        const response: AuthResponse = await attemptLogin(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "")
+        const response: AuthResponse = await attemptLogin(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "");
 
         if (response.success) {
             setToken(response.token);
@@ -55,6 +55,8 @@ function Login() {
 
     const registerHandler = async () => {
         const response: AuthResponse = await attemptRegister(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "")
+
+        console.log(response);
 
         if (response.success) {
             setToken(response.token);
