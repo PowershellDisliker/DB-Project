@@ -20,6 +20,7 @@ async def broadcast(game_id: uuid.UUID, message: str):
 
     for client in rooms[game_id]:
         try:
+            print(message)
             await client.send_text(message)
         except Exception:
             dead.append(client)
@@ -59,6 +60,7 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
         # --- Step 3: send initial game snapshot ---
         su = payload.get("su")
         snapshot = game_multiplexer.create_or_load(initial_request, su)
+        print(snapshot)
         await ws.send_text(snapshot.model_dump_json())
 
         # --- Step 4: main loop ---
@@ -69,8 +71,19 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
             response: WebsocketOutgoingCommand = game_multiplexer.process_message(command)
             response_json = response.model_dump_json()
 
-            # broadcast to all clients in the room
+            print(response_json)
+
+            # broadcast the initial response (e.g., success/failure/log)
             await broadcast(initial_request.game_id, response_json)
+
+            # --- FIX 2: Check if a piece was dropped or a user registered ---
+            # Trigger a full board state broadcast after any action that changes the board structure.
+            if response.command_type == "register_user" and response.success or \
+            response.command_type == "drop_piece_response" and response.success:
+                
+                # After a successful registration or piece drop, broadcast the full board state
+                board_state_response = game_multiplexer.__get_board_state_response(initial_request.game_id)
+                await broadcast(initial_request.game_id, board_state_response.model_dump_json())
 
     except WebSocketDisconnect:
         pass
@@ -84,6 +97,11 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
                 su = payload.get("su")
                 print(f"{su} disconnected from {game_id}")
                 game_multiplexer.disconnect(game_id, su)
+
+                if game_id in game_multiplexer.games and rooms[game_id]:
+                    board_state_response = game_multiplexer.__get_board_state_response(game_id)
+
+                    await broadcast(game_id, board_state_response.model_dump_json())
 
             if ws in rooms[game_id]:
                 rooms[game_id].remove(ws)

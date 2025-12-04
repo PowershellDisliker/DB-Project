@@ -103,6 +103,7 @@ function GameCanvas({game_id}: CanvasProps) {
       ws.current!.send(JSON.stringify({
         jwt: auth.token,
         game_id: game_id,
+        user_id: auth.user_id,
       } as WebsocketGameRequest));
     });
 
@@ -121,6 +122,7 @@ function GameCanvas({game_id}: CanvasProps) {
           
           // Realtime state update
           RealTimeState.current!.pieces.push(new Piece(jsonData.row, jsonData.col, current_player_id == RealTimeState.current!.player_1_id ? COLORS[0] : COLORS[1]));
+          RealTimeState.current!.active_player = jsonData.next_active_player_id;
 
           if (jsonData.winner_id) {
             setViewModel(() => ({
@@ -138,6 +140,14 @@ function GameCanvas({game_id}: CanvasProps) {
           break;
 
         case 'board_state':
+          if (jsonData.user_1_id && !jsonData.user_2_id && jsonData.user_1_id != auth.user_id) {
+            ws.current!.send(JSON.stringify({
+              command_type: "register_user",
+              user_id: auth.user_id,
+              game_id: game_id
+            } as WebsocketRequest));
+          }
+
           // Real time state update
           RealTimeState.current.active_player = jsonData.active_player;
           RealTimeState.current.player_1_id = jsonData.user_1_id;
@@ -149,6 +159,11 @@ function GameCanvas({game_id}: CanvasProps) {
               game_running: false,
               active_player: false, 
             }))
+          } else {
+            setViewModel(() => ({
+                game_running: true,
+                active_player: jsonData.active_player == auth.user_id,
+              }))
           }
 
           RealTimeState.current.pieces = jsonData.board_state!.map((value, index) => {
@@ -159,29 +174,26 @@ function GameCanvas({game_id}: CanvasProps) {
             return new Piece(row, col, value == jsonData.user_1_id ? COLORS[0] : COLORS[1]);
           });
           break;
-        
-        case 'register_response':
-          if (!jsonData.success) {
-            console.log(`error registering user ${auth.user_id != jsonData.user_1_id ? jsonData.user_1_id : jsonData.user_2_id}`)
-          }
 
-          // State updates:
-          // realtime
-          RealTimeState.current!.player_1_id = jsonData.user_1_id;
-          RealTimeState.current!.player_2_id = jsonData.user_2_id;
+        case 'log':
+          console.log(jsonData.message);
+          break;
     }});
 
     // OnClose
-    ws.current.addEventListener('close', () => {
-    });
+    // ws.current.addEventListener('close', () => {
+    // });
 
     // Cleanup
     return () => {
-      ws.current?.close();
+      if (ws.current && ws.current.readyState !== WebSocket.CLOSED) {
+        ws.current.close();
+      }
     };
-  }, [config?.BACKEND_WS_URL, auth?.token, game_id]);
+  }, []);
 
   const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    console.log(viewModel.active_player + " " + viewModel.game_running);
     if (!viewModel.active_player || !viewModel.game_running) return;
 
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -193,13 +205,15 @@ function GameCanvas({game_id}: CanvasProps) {
     const columnWidth = (canvasRef.current!.width - margin) / COLS;
     const pieceCol = Math.floor((x - (margin / 2)) / columnWidth);
 
+    
     const message = {
       command_type: 'drop_piece',
-
+      
       game_id: game_id,
       col: pieceCol,
       user_id: auth.user_id,
     } as WebsocketRequest;
+    
 
     ws.current?.send(JSON.stringify(message));
   };

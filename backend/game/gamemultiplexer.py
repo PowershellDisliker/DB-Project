@@ -28,15 +28,6 @@ class GameMultiplexer:
         )
 
 
-    def __get_register_response(self, success: bool, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
-        return WebsocketOutgoingCommand(
-            command_type="register_response",
-            user_1_id=user_1_id,
-            user_2_id=user_2_id,
-            success=success
-        )
-
-
     def __get_drop_piece_response(self, game_response: DropPieceResponse) -> WebsocketOutgoingCommand:
         if game_response.coords is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
@@ -50,15 +41,34 @@ class GameMultiplexer:
             next_active_player_id=game_response.next_active_player_id,
         )
 
+    
+    def __get_log_response(self, message: str) -> WebsocketOutgoingCommand:
+        return WebsocketOutgoingCommand(
+            command_type="log",
+            message=message
+        )
+
 
     def create_or_load(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
-        self.games.setdefault(request.game_id, ConnectFourBoard(user_id, None))
+        game = self.games.get(request.game_id)
+
+        if game is None:
+            new_game = ConnectFourBoard(user_id)
+            self.games[request.game_id] = new_game
+            game = new_game
 
         return self.__get_board_state_response(request.game_id)
 
 
+    # In GameMultiplexer
     def disconnect(self, game_id: uuid.UUID, user_id: uuid.UUID) -> None:
-        pass
+        game = self.games.get(game_id)
+        if game:
+            game.deregister_player(user_id) # assuming you implement deregister_player
+            
+            # If the game is now empty, delete it
+            if game.user_1_id is None and game.user_2_id is None:
+                 del self.games[game_id]
 
 
     def process_message(self, request: WebsocketIncomingCommand) -> WebsocketOutgoingCommand:
@@ -108,10 +118,10 @@ class GameMultiplexer:
 
                 # Register the user and send the response
                 success: bool = game.register_player(request.user_id)
-                users = game.get_players()
-                user_1_id: uuid.UUID | None = users[0]
-                user_2_id: uuid.UUID | None = users[1]
-                return self.__get_register_response(success, user_1_id, user_2_id)
+
+                if not success:
+                    return self.__get_error_response("Error registering user")
+                return self.__get_board_state_response(request.game_id)
 
             case "get_board_state":
                 if request.game_id is None:

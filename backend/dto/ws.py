@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Literal, Tuple
+from typing import Literal
 import uuid
 
 # Websocket Data Models
@@ -14,9 +14,11 @@ class WebsocketIncomingCommand(BaseModel):
     user_id: uuid.UUID | None = None
 
 class WebsocketOutgoingCommand(BaseModel):
-    command_type: Literal["error", "board_state", "register_response", "drop_piece_response"]
+    command_type: Literal["error", "board_state", "drop_piece_response", "log"]
     
     error: str | None = None
+
+    message: str | None = None
     
     user_id: str | None = None
 

@@ -110,7 +110,7 @@ function Home() {
                 <ul>
                     {viewModel.friends?.map((value) => {
                         return (
-                            <Friend username={value.username} online={value.online}/>
+                            <Friend username={value.username} online={value.online} key={value.username}/>
                         )
                     })}
                 </ul>
@@ -125,7 +125,7 @@ function Home() {
                 <ul>
                     {viewModel.open_games?.games?.map((value) => {
                         return (
-                            <OpenGameComp game_id={value.game_id} can_join={value.can_join} user_1_id={value.user_1_id}/>
+                            <OpenGameComp game_id={value.game_id} can_join={value.can_join} user_1_id={value.user_1_id} key={value.game_id}/>
                         )
                     })}
                 </ul>
@@ -140,7 +140,7 @@ function Home() {
                 <ul>
                     {viewModel?.closed_games?.games?.map((value) => {
                         return (
-                            <PreviousGame id={value.game_id} />
+                            <PreviousGame id={value.game_id} key={value.game_id}/>
                         )
                     })}
                 </ul>

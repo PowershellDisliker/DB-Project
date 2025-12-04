@@ -7,11 +7,11 @@ ROW_COUNT: int = 6
 COL_COUNT: int = 7
 
 class ConnectFourBoard:
-    def __init__(self, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> None:
+    def __init__(self, user_1_id: uuid.UUID) -> None:
         self.user_1_id: uuid.UUID | None = user_1_id
-        self.user_2_id: uuid.UUID | None = user_2_id
+        self.user_2_id: uuid.UUID | None = None
 
-        self.active_player: uuid.UUID | None = user_1_id
+        self.active_player: uuid.UUID = user_1_id
         self.winner_id: uuid.UUID | None = None
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
@@ -90,13 +90,15 @@ class ConnectFourBoard:
             self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
             return DropPieceResponse(
                 success=True,
-                coords=(last_available_row, col)
+                coords=(last_available_row, col),
+                next_active_player_id=self.active_player
             )
         self.winner_id = winner
         return DropPieceResponse(
             success=True,
             winner_id=winner,
-            coords=(last_available_row, col)
+            coords=(last_available_row, col),
+            next_active_player_id=self.active_player
         )
 
 
@@ -116,6 +118,13 @@ class ConnectFourBoard:
 
     def get_active_player(self) -> uuid.UUID | None:
         return self.active_player
+
+    def deregister_player(self, user_id: uuid.UUID) -> None:
+        if self.user_1_id == user_id:
+            self.user_1_id = None
+
+        elif self.user_2_id == user_id:
+            self.user_2_id = None
 
 
     def __get_index(self, row: int, col: int) -> int:
