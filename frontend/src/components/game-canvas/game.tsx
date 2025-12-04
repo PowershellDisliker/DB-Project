@@ -51,7 +51,7 @@ function GameCanvas({game_id}: CanvasProps) {
 
 
     // OnOpen
-    ws.current!.addEventListener('open', async (event: Event) => {
+    ws.current!.addEventListener('open', async () => {
       ws.current!.send(JSON.stringify({
         jwt: auth.token,
         game_id: game_id,
