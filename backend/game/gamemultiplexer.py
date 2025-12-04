@@ -82,8 +82,12 @@ class GameMultiplexer:
                 requested_game: ConnectFourBoard = self.games[request.game_id]
                 
                 # Check if the requesting user is registered
-                if request.user_id not in requested_game.get_players():
-                    return self.__get_error_response("user_id not registered in game")
+                players = requested_game.get_players()
+
+                if request.user_id not in players:
+                    print(players)
+                    print(request.user_id in players)
+                    return self.__get_error_response(f"user_id: {request.user_id} not registered in {players}")
 
                 # Check if the requesting user is the active player
                 if request.user_id != requested_game.get_active_player():

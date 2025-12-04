@@ -8,6 +8,7 @@ COL_COUNT: int = 7
 
 class ConnectFourBoard:
     def __init__(self, user_1_id: uuid.UUID) -> None:
+        print(user_1_id)
         self.user_1_id: uuid.UUID | None = user_1_id
         self.user_2_id: uuid.UUID | None = None
 
@@ -34,7 +35,6 @@ class ConnectFourBoard:
         return False
 
 
-    # Maybe make composite data type for return value?
     def drop_piece(self, piece_owner: uuid.UUID, col: int) -> DropPieceResponse:
         """
         Attempts to drop a connect 4 piece into the board at a specific column.

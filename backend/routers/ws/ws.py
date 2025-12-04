@@ -15,19 +15,17 @@ rooms: dict[uuid.UUID, set[WebSocket]] = defaultdict(set)
 
 
 async def broadcast(game_id: uuid.UUID, message: str):
-    """Send a message to all clients in the game room"""
-    dead = []
-
-    for client in rooms[game_id]:
+    """Send a message to all clients in the game room, ignoring non-fatal errors."""
+    for client in rooms.get(game_id, set()): # Use .get() defensively
         try:
-            print(message)
+            print(f"Sending to client {client.scope.get('headers')}: {message[:50]}...")
             await client.send_text(message)
-        except Exception:
-            dead.append(client)
-
-    # Cleanup dead connections
-    for client in dead:
-        rooms[game_id].remove(client)
+        except Exception as e:
+            # We encountered an error, but DO NOT remove the client here.
+            # A genuine disconnect will be handled by the main WebSocket handler's finally block.
+            # If this is a recoverable error, we want the client to stay.
+            # If it's a fatal error, the main loop for that client will soon break.
+            print(f"Error sending to client in room {game_id}: {e}")
 
 
 @router.websocket("/")
@@ -58,9 +56,8 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
             return
 
         # --- Step 3: send initial game snapshot ---
-        su = payload.get("su")
-        snapshot = game_multiplexer.create_or_load(initial_request, su)
-        print(snapshot)
+        sub: uuid.UUID = uuid.UUID(payload.get("sub"))
+        snapshot = game_multiplexer.create_or_load(initial_request, sub)
         await ws.send_text(snapshot.model_dump_json())
 
         # --- Step 4: main loop ---
@@ -70,8 +67,6 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
 
             response: WebsocketOutgoingCommand = game_multiplexer.process_message(command)
             response_json = response.model_dump_json()
-
-            print(response_json)
 
             # broadcast the initial response (e.g., success/failure/log)
             await broadcast(initial_request.game_id, response_json)
@@ -92,18 +87,28 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
         # --- cleanup ---
         if initial_request is not None:
             game_id = initial_request.game_id
+            
+            game_to_broadcast = game_multiplexer.games.get(game_id) # <--- Get the reference safely
 
             if payload is not None:
-                su = payload.get("su")
-                print(f"{su} disconnected from {game_id}")
-                game_multiplexer.disconnect(game_id, su)
+                sub = payload.get("sub") # Use "sub" as per jwt payload, not "su"
+                print(f"{sub} disconnected from {game_id}")
+                
+                # Disconnect logic runs and might delete the game from the dict
+                game_multiplexer.disconnect(game_id, sub) 
 
-                if game_id in game_multiplexer.games and rooms[game_id]:
-                    board_state_response = game_multiplexer.__get_board_state_response(game_id)
+                # Check if the game existed before disconnect, and if there are still clients in the room
+                if game_to_broadcast and rooms.get(game_id):
+                    # Now we call the internal method using the stored reference, 
+                    # which is safer, but __get_board_state_response still uses self.games[game_id].
+                    # Let's modify the GameMultiplexer instead for robustness.
+                    
+                    # For a quick fix, let's just make the call robust:
+                    if game_id in game_multiplexer.games: # Re-check existence after disconnect
+                        board_state_response = game_multiplexer.__get_board_state_response(game_id)
+                        await broadcast(game_id, board_state_response.model_dump_json())
 
-                    await broadcast(game_id, board_state_response.model_dump_json())
-
-            if ws in rooms[game_id]:
+            if ws in rooms.get(game_id, set()): # Use .get() defensively here too
                 rooms[game_id].remove(ws)
                 if not rooms[game_id]:
                     del rooms[game_id]
