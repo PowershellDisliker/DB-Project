@@ -5,6 +5,7 @@ import {
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
     type GetPublicUserResponse, type GetPrivateUserResponse,
+    type OpenGameProps
 } from "../dto";
 
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
@@ -85,6 +86,10 @@ export const postMessage = async (backend_url: string, jwt: string, request: Pos
 
 export const getOpenGames = async (backend_url: string, jwt: string): Promise<GetOpenGamesResponse> => {
     return getBackend<GetOpenGamesResponse>(backend_url, "/api/opengames", jwt);
+}
+
+export const GetOpenGameDetails = async (backend_url: string, jwt: string): Promise<OpenGameProps> => {
+    return getBackend<OpenGameProps>(backend_url, "/api/opengamedetails", jwt);
 }
 
 export const postOpenGame = async (backend_url: string, jwt: string): Promise<PostOpenGamesResponse> => {

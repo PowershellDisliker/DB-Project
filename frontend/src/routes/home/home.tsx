@@ -125,7 +125,7 @@ function Home() {
                 <ul>
                     {viewModel.open_games?.games?.map((value) => {
                         return (
-                            <OpenGameComp game_id={value.game_id} can_join={value.can_join} user_1_id={value.user_1_id} key={value.game_id}/>
+                            <OpenGameComp game={value} key={value.game_id}/>
                         )
                     })}
                 </ul>
