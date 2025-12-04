@@ -18,10 +18,6 @@
     background-color: var(--muted-blue);
 }
 
-.button:hover {
-    background-color: var(--muted-green);
-}
-
 .mainContainer {
     padding: 10px;
 }
