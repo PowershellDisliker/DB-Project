@@ -5,7 +5,7 @@ from sqlalchemy import select, create_engine, Table, Column, Integer, String, En
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 from typing import Optional
-from dto import DB_ClosedGame, DB_Friend, DB_Message, DB_OpenGame, DB_Token, DB_User
+from dto import DB_ClosedGame, DB_Message, DB_Token, DB_User
 
 
 class DBClient:
@@ -45,14 +45,6 @@ class DBClient:
             Column('Token', UUID(as_uuid=True), unique=True)
         )
 
-        open_games = Table(
-            'OpenGames', metadata,
-            Column('ID', UUID(as_uuid=True), primary_key=True),
-            Column('User1ID', UUID(as_uuid=True), ForeignKey('Users.ID')),
-            Column('User2ID', UUID(as_uuid=True), ForeignKey('Users.ID'), nullable=True),
-            Column('StartTime', DateTime(timezone=True), server_default=func.now())
-        )
-
         closed_games = Table(
             'ClosedGames', metadata,
             Column('ID', UUID(as_uuid=True), primary_key=True),
@@ -81,7 +73,6 @@ class DBClient:
 
         self.users = users
         self.active_tokens = active_tokens
-        self.open_games = open_games
         self.closed_games = closed_games
         self.friends = friends
         self.messages = messages
@@ -200,38 +191,6 @@ class DBClient:
         if not result:
             return False
         return True
-
-
-    def post_open_game(self, user_1_id: uuid.UUID) -> DB_OpenGame | None:
-        game_id = uuid.uuid4()
-
-        result = self.__run_exec("""INSERT INTO "OpenGames" ("ID", "User1ID") VALUES (:id, :user1)""", 
-            {"id": game_id, "user1": user_1_id})
-
-        if result.rowcount <= 0:
-            return None
-
-        return DB_OpenGame(
-            game_id=game_id,
-            user_1_id=user_1_id
-        )
-
-
-    def get_open_games(self) -> list[DB_OpenGame] | None:
-        result = self.__run_query("""SELECT * FROM "OpenGames" """)
-
-        if not result:
-            return None
-
-        return [
-            DB_OpenGame(
-                game_id=row.ID,
-                user_1_id=row.User1ID,
-                user_2_id=row.User2ID,
-                start_time=row.StartTime
-            )
-            for row in result
-        ]
 
 
     def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID, pieces: list[uuid.UUID | None]) -> DB_ClosedGame | None:
