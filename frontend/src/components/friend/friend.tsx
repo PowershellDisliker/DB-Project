@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GetPublicUserResponse } from '../../dto';
 
 function Friend({username, online}: GetPublicUserResponse) {

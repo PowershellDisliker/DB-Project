@@ -1,4 +1,4 @@
-import type { GetClosedGameResponse, GetOpenGamesResponse, GetPublicUserResponse, OpenGameProps } from "../../dto";
+import type { GetClosedGameResponse, GetOpenGamesResponse, GetPublicUserResponse } from "../../dto";
 import type { User } from "../../dto/friend";
 
 export type HomeViewModel = {
