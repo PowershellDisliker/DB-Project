@@ -60,11 +60,11 @@ function Home() {
             const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
             const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
 
-            const openGameDetails: Array<OpenGameProps> = [];
+            const gameDetailsPromises = openGames.games?.map(game_id => 
+                getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id)
+            ) || [];
 
-            openGames.games?.forEach(async (game_id) => {
-                openGameDetails.push(await getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id));
-            })
+            const openGameDetails: Array<OpenGameProps> = await Promise.all(gameDetailsPromises);
 
             console.log(openGameDetails);
 

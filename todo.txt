@@ -1,0 +1,5 @@
+Post game to closedgames when websocket sees a winner
+
+Retrieve and render closed games
+
+Implement Messages
