@@ -1,4 +1,5 @@
 export interface GetPublicUserResponse {
+    user_id: string | null,
     username: string | null,
     online: boolean | null
 }

@@ -3,6 +3,7 @@ import uuid
 
 # /api/user/public
 class GetPublicUserDataResponse(BaseModel):
+    user_id: uuid.UUID | None = None
     username: str | None = None
     online: bool | None = None
 

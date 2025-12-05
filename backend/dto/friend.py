@@ -1,16 +1,20 @@
 from pydantic import BaseModel
 from typing import Tuple
+from dto import DB_User
 import uuid
 
 # /api/friends
 # GET
 class GetFriendResponse(BaseModel):
-    friend_ids: list[Tuple[uuid.UUID, bool]] | None
+    friend_ids: list[uuid.UUID] | None
+
+class GetFriendRequestsResponse(BaseModel):
+    users: list[DB_User] | None = None
 
 # POST
 class PostFriendRequest(BaseModel):
-    user_1_id: uuid.UUID
-    user_2_id: uuid.UUID
+    requestor_id: uuid.UUID
+    requestee_id: uuid.UUID
 
 class PostFriendResponse(BaseModel):
     success: bool
