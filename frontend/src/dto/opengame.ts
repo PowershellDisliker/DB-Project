@@ -10,7 +10,7 @@ export interface OpenGameProps {
 }
 
 export interface GetOpenGamesResponse {
-    games: Array<OpenGame>
+    games: Array<string> | null
 }
 
 export interface PostOpenGamesResponse {

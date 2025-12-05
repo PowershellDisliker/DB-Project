@@ -1,17 +1,9 @@
-from fastapi import WebSocket
-
-from backend.dto.opengame import OpenGame
 from .game import ConnectFourBoard
-from typing import Tuple
-from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse
-from dependencies import get_db
+from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse, OpenGame, PostOpenGameResponse
 import uuid
-
 
 class GameMultiplexer:
     games: dict[uuid.UUID, ConnectFourBoard] = {}
-
-    db = get_db()
 
     def __get_error_response(self, msg: str) -> WebsocketOutgoingCommand:
         return WebsocketOutgoingCommand(
@@ -158,4 +150,15 @@ class GameMultiplexer:
             game_id=game_id,
             user_1_id=game.user_1_id,
             user_2_id=game.user_2_id
+        )
+
+    def create_game(self) -> PostOpenGameResponse:
+        new_game_id = uuid.uuid4()
+
+        while new_game_id in self.games.keys():
+            new_game_id = uuid.uuid4()
+
+        return PostOpenGameResponse(
+            success=True,
+            game_id=new_game_id
         )

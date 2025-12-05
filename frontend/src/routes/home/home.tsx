@@ -8,6 +8,7 @@ import { Friend } from '../../components/friend';
 import OutgoingFriendRequest from "../../components/outgoing-friend/outgoing-friend";
 import IncomingFriendRequest from "../../components/incoming-friend/incoming-friend";
 import { OpenGameComp } from "../../components/open-game";
+import type { OpenGameProps } from "../../dto/opengame";
 import { PreviousGame } from "../../components/previous-game";
 import { getPublicUser, getOpenGames, getFriends, postOpenGame } from "../../api";
 
@@ -16,7 +17,7 @@ import homeStyles from "./home.module.css";
 
 import type { HomeViewModel } from "./home-vm";
 import { useNavigate } from "react-router-dom";
-import { getIncomingFriendRequests, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend } from "../../api/api";
+import { getIncomingFriendRequests, getOpenGameDetails, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend } from "../../api/api";
 
 function Home() {
     const navigate = useNavigate();
@@ -59,10 +60,18 @@ function Home() {
             const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
             const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
 
+            const openGameDetails: Array<OpenGameProps> = [];
+
+            openGames.games?.forEach(async (game_id) => {
+                openGameDetails.push(await getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id));
+            })
+
+            console.log(openGameDetails);
+
             setViewModel(prev => ({
                 ...prev,
                 user_details: userDetails,
-                open_games: openGames,
+                open_games: openGameDetails,
                 friends: confirmedFriends.users,
                 outgoing_friend_requests: outGoingFriendRequests.users,
                 incoming_friend_requests: incomingFriendRequests.users,
@@ -159,9 +168,9 @@ function Home() {
                 </div>
                 {viewModel.open_games == null && <LoadingIcon/>}
                 <ul>
-                    {viewModel.open_games?.games?.map((value) => {
+                    {viewModel.open_games?.map((value) => {
                         return (
-                            <OpenGameComp game={value} key={value.game_id}/>
+                            <OpenGameComp game={value.game} key={value.game.game_id}/>
                         )
                     })}
                 </ul>

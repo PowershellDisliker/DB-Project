@@ -102,7 +102,7 @@ export const getOpenGames = async (backend_url: string, jwt: string): Promise<Ge
 }
 
 export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGameProps> => {
-    return getBackend<OpenGameProps>(backend_url, `/api/opengamedetails?game_id=${game_id}`, jwt);
+    return getBackend<OpenGameProps>(backend_url, `/api/opengames/detail?game_id=${game_id}`, jwt);
 }
 
 export const postOpenGame = async (backend_url: string, jwt: string): Promise<PostOpenGamesResponse> => {
