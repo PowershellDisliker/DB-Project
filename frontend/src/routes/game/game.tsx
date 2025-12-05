@@ -15,7 +15,7 @@ function Game() {
 
     return (
         <div className={gameStyles.gameBorder}>
-            <div className={`${globalStyles.center} ${globalStyles.roundedContainer}`}>
+            <div className={`${globalStyles.center} ${globalStyles.height} ${globalStyles.roundedContainer}`}>
                 <GameCanvas game_id={searchParams.get("game_id")}/>
             </div>
           <button onClick={exitHandler}>Exit</button>

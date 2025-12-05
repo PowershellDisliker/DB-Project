@@ -69,7 +69,7 @@ function Login() {
     };
 
     return (
-        <div>
+        <div className={`${globalStyles.globalCenter} ${globalStyles.column}`}>
             <div className={`${globalStyles.globalCenter} ${globalStyles.column}`}>
                 <div className={`${globalStyles.roundedContainer} ${globalStyles.column} ${globalStyles.spaceBetween} ${loginStyles.mainContainer}`}>
                     <div className={`${globalStyles.spaceBetween} ${loginStyles.inputElement}`}>

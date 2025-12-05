@@ -12,5 +12,7 @@ export type HomeViewModel = {
     failed_to_create_game: boolean;
     failed_to_post_friend: boolean;
 
+    need_to_update: boolean;
+
     username_input: string;
 }

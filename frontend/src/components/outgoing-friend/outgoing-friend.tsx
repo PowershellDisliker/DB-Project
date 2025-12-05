@@ -1,14 +1,16 @@
 import type { User } from "../../dto/friend"
+import globalStyles from "../../global.module.css";
 
 interface RequestProps {
     user: User
+    state_update: () => void
 }
 
-function OutgoingFriendRequest({user}: RequestProps) {
+function OutgoingFriendRequest({user, state_update}: RequestProps) {
 
 
     return (
-        <div>
+        <div className={`${globalStyles.roundedContainer} ${globalStyles.center}`}>
             <p>{user.username}</p>
             <p>{user.online}</p>
         </div>

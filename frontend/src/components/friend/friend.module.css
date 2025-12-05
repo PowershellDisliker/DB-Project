@@ -1,0 +1,16 @@
+p {
+    margin-block: 4px;
+    margin-inline: 6px;
+}
+
+.gap {
+    gap: 5px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.margin {
+    margin: 2px;
+}

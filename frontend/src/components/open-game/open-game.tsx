@@ -44,10 +44,9 @@ function OpenGameComp({game}: OpenGameProps) {
 
     return (
         <div className={globalStyles.roundedContainer}>
-            <button onClick={joinGame}>
                 <p>Player 1: {user1Username}</p>
                 <p>Player 2: {user2Username}</p>
-            </button>
+            <button onClick={joinGame}>Join or Spectate Game</button>
         </div>
     )
 }

@@ -3,13 +3,15 @@ import type { PostFriendRequest, User } from "../../dto/friend";
 import { AuthContext, ConfigContext } from "../../context";
 import { postFriend } from "../../api";
 import { removeFriend } from "../../api/api";
+import globalStyles from "../../global.module.css";
 
 
-interface RequetsProps {
-    user: User
+interface RequestProps {
+    user: User;
+    state_update: () => void;
 }
 
-function IncomingFriendRequest({user}: RequetsProps) {
+function IncomingFriendRequest({user, state_update}: RequestProps) {
 
     const auth = useContext(AuthContext);
     const config = useContext(ConfigContext);
@@ -19,6 +21,7 @@ function IncomingFriendRequest({user}: RequetsProps) {
             requestor_id: auth.user_id,
             requestee_id: user.user_id,
         } as PostFriendRequest)
+        state_update();
     };
 
     const rejectHandler = async () => {
@@ -26,17 +29,17 @@ function IncomingFriendRequest({user}: RequetsProps) {
             requestor_id: auth.user_id,
             requestee_id: auth.user_id,
         } as PostFriendRequest)
+        state_update();
     }
 
     return (
-        <div>
+        <div className={`${globalStyles.row} ${globalStyles.spaceBetween} ${globalStyles.margin}`}>
             <p>{user.username}</p>
             <p>{user.online}</p>
-            <div>
+            <div className={`${globalStyles.row}`}>
                 <button onClick={acceptHandler}>Accept</button>
                 <button onClick={rejectHandler}>Reject</button>
             </div>
-
         </div>
     )
 }
