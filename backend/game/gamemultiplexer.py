@@ -1,4 +1,6 @@
 from fastapi import WebSocket
+
+from backend.dto.opengame import OpenGame
 from .game import ConnectFourBoard
 from typing import Tuple
 from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse
@@ -138,3 +140,22 @@ class GameMultiplexer:
             case _:
                 return self.__get_error_response("malformed websocket request")
 
+
+    def get_open_game_ids(self) -> list[uuid.UUID]:
+        return list(self.games.keys())
+
+    def get_open_game_detail(self, game_id: uuid.UUID) -> OpenGame:
+        game = self.games.get(game_id)
+
+        if game is None:
+            return OpenGame(
+                game_id=game_id,
+                user_1_id=None,
+                user_2_id=None
+            )
+        
+        return OpenGame(
+            game_id=game_id,
+            user_1_id=game.user_1_id,
+            user_2_id=game.user_2_id
+        )
