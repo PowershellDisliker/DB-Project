@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import localStyles from "./staticcanvas.module.css";
 
 interface StaticCanvasProps {
     board_state: Array<string | null>;
