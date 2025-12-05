@@ -1,7 +1,7 @@
 import {
     type AuthRequest, type AuthResponse,
     type GetClosedGameResponse, type PostClosedGameRequest, type PostClosedGameResponse,
-    type GetFriendResponse, type PostFriendRequest, type PostFriendResponse,
+    type PostFriendRequest, type PostFriendResponse,
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
     type GetPublicUserResponse, type GetPrivateUserResponse,

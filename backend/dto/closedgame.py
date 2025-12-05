@@ -10,6 +10,7 @@ class ClosedGame(BaseModel):
     user_2_id: uuid.UUID
     winner: uuid.UUID
     duration: timedelta
+    pieces: list[uuid.UUID | None]
 
 class GetClosedGameResponse(BaseModel):
     games: list[ClosedGame] | None
@@ -18,6 +19,7 @@ class GetClosedGameResponse(BaseModel):
 class PostClosedGameRequest(BaseModel):
     game_id: uuid.UUID
     winner: uuid.UUID
+    pieces: uuid.UUID
 
 class PostClosedGameResponse(BaseModel):
     success: bool

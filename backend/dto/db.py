@@ -27,6 +27,7 @@ class DB_ClosedGame(BaseModel):
     start_time: datetime | None = None
     end_time: datetime | None = None
     winner: uuid.UUID | None = None
+    pieces: list[uuid.UUID | None]
 
 class DB_Friend(BaseModel):
     friend_id: uuid.UUID | None = None

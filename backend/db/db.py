@@ -2,7 +2,7 @@ import bcrypt
 import uuid
 
 from sqlalchemy import select, create_engine, Table, Column, Integer, String, Engine, MetaData, LargeBinary, ForeignKey, UnicodeText, text, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 from typing import Optional
 from dto import DB_ClosedGame, DB_Friend, DB_Message, DB_OpenGame, DB_Token, DB_User
@@ -60,7 +60,8 @@ class DBClient:
             Column('User2ID', UUID(as_uuid=True), ForeignKey('Users.ID')),
             Column('StartTime', DateTime(timezone=True), server_default=func.now()),
             Column('EndTime', DateTime(timezone=True), server_default=func.now()),
-            Column('Winner', UUID(as_uuid=True), ForeignKey('Users.ID'))
+            Column('Winner', UUID(as_uuid=True), ForeignKey('Users.ID')),
+            Column('Pieces', ARRAY(UUID(as_uuid=True)), nullable=False)
         )
         
         friends = Table(
@@ -233,7 +234,7 @@ class DBClient:
         ]
 
 
-    def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID) -> DB_ClosedGame | None:
+    def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID, pieces: list[uuid.UUID | None]) -> DB_ClosedGame | None:
         result = self.__run_query("""SELECT * FROM "OpenGames" where "ID" = :id""", {"id": game_id})
 
         if not result:
@@ -256,7 +257,8 @@ class DBClient:
             user_1_id=result[0].User1ID,
             user_2_id=result[0].User2ID,
             start_time=result[0].StartTime,
-            winner=winner_id
+            winner=winner_id,
+            pieces=pieces
         )
 
 
@@ -274,6 +276,7 @@ class DBClient:
                 start_time=row.StartTime,
                 end_time=row.EndTime,
                 winner=row.Winner,
+                pieces=row.Pieces,
             )
         for row in result]
 
