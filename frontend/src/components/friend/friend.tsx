@@ -1,12 +1,11 @@
-import React from 'react';
-import type {FriendProps} from '../../dto/types';
+import type { GetPublicUserResponse } from '../../dto';
 
-function Friend(props: FriendProps) {
-
+function Friend({username, online}: GetPublicUserResponse) {
 
     return (
         <div>
-            <h3>I'm a Friend!</h3>
+            <p>{username}</p>
+            <p>{online ? "online" : "offline"}</p>
         </div>
     )
 }

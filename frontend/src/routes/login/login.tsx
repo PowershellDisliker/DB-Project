@@ -54,9 +54,7 @@ function Login() {
     };
 
     const registerHandler = async () => {
-        const response: AuthResponse = await attemptRegister(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "")
-
-        console.log(response);
+        const response: AuthResponse = await attemptRegister(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "");
 
         if (response.success) {
             setToken(response.token);

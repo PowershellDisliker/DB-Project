@@ -1,7 +1,7 @@
 import { ConfigContext, type Config, AuthContext} from "./context";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { Login, Home, Game } from "./routes";
+import { Login, Home, Game, Base } from "./routes";
 
 function App() {
 
@@ -19,6 +19,7 @@ function App() {
       <AuthContext.Provider value={{token, setToken, user_id, setUserId}}>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Base/>}/>
             <Route path="/home" element={<Home/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/game" element={<Game />} />

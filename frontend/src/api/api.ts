@@ -5,7 +5,9 @@ import {
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
     type GetPublicUserResponse, type GetPrivateUserResponse,
+    type OpenGameProps
 } from "../dto";
+import type { GetFriendRequestsResponse } from "../dto/friend";
 
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
 
@@ -60,15 +62,23 @@ export const attemptRegister = async (backend_url: string, username: string, pas
 }
 
 export const getClosedGames = async (backend_url: string, jwt: string): Promise<GetClosedGameResponse> => {
-    return getBackend<GetClosedGameResponse>(backend_url, "/api/closedgames", jwt)
+    return getBackend<GetClosedGameResponse>(backend_url, "/api/closedgames", jwt);
 }
 
 export const postClosedGame = async (backend_url: string, jwt: string, request: PostClosedGameRequest): Promise<PostClosedGameResponse> => {
-    return postBackend<PostClosedGameResponse>(backend_url, "/api/closedgames", request, jwt)
+    return postBackend<PostClosedGameResponse>(backend_url, "/api/closedgames", request, jwt);
 }
 
 export const getFriends = async (backend_url: string, jwt: string): Promise<GetFriendResponse> => {
-    return getBackend(backend_url, "/api/friends", jwt)
+    return getBackend(backend_url, "/api/friends", jwt);
+}
+
+export const getIncomingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
+    return getBackend(backend_url, "/api/friends/incoming", jwt);
+}
+
+export const getOutgoingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
+    return getBackend(backend_url, "/api/friends/outgoing", jwt);
 }
 
 export const postFriend = async (backend_url: string, jwt: string, request: PostFriendRequest): Promise<PostFriendResponse> => {
@@ -87,12 +97,20 @@ export const getOpenGames = async (backend_url: string, jwt: string): Promise<Ge
     return getBackend<GetOpenGamesResponse>(backend_url, "/api/opengames", jwt);
 }
 
+export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGameProps> => {
+    return getBackend<OpenGameProps>(backend_url, `/api/opengamedetails?game_id=${game_id}`, jwt);
+}
+
 export const postOpenGame = async (backend_url: string, jwt: string): Promise<PostOpenGamesResponse> => {
     return postBackend<PostOpenGamesResponse>(backend_url, "/api/opengames", {}, jwt)
 }
 
 export const getPublicUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPublicUserResponse> => {
-    return getBackend<GetPublicUserResponse>(backend_url, `/api/user/public?query_user_id=${user_id}`, jwt);
+    return getBackend<GetPublicUserResponse>(backend_url, `/api/user/public/id?query_user_id=${user_id}`, jwt);
+}
+
+export const getPublicUserFromUsername = async (backend_url: string, jwt: string, username: string): Promise<GetPublicUserResponse> => {
+    return getBackend<GetPublicUserResponse>(backend_url, `/api/user/public/username?query_username=${username}`, jwt);
 }
 
 export const getPrivateUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPrivateUserResponse> => {

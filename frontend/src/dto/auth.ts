@@ -8,7 +8,3 @@ export interface AuthResponse {
     token: string | null;
     user_id: string | null;
 }
-
-export interface C4JWT {
-    sub: string;
-}

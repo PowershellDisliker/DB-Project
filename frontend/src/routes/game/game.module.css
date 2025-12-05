@@ -1,3 +1,8 @@
-.game-border {
-    display: flex
+.gameBorder {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--muted-green);
+    transition: background-color 0.1s ease-in-out;
 }

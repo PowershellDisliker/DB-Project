@@ -12,9 +12,11 @@ export interface WebsocketRequest {
 }
 
 export interface WebsocketResponse {
-    command_type: "error" | "board_state" | "register_response" | "drop_piece_response";
+    command_type: "error" | "board_state" | "drop_piece_response" | "log";
 
     error: string | null;
+
+    message: string | null;
 
     user_1_id: string | null;
     user_2_id: string | null;

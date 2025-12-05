@@ -15,7 +15,7 @@ class GameMultiplexer:
         )
 
 
-    def __get_board_state_response(self, game_id: uuid.UUID) -> WebsocketOutgoingCommand:
+    def _get_board_state_response(self, game_id: uuid.UUID) -> WebsocketOutgoingCommand:
         board_state: BoardState = self.games[game_id].get_board_state()
 
         return WebsocketOutgoingCommand(
@@ -25,15 +25,6 @@ class GameMultiplexer:
             user_2_id=board_state.user_2_id,
             winner_id=board_state.winner_id,
             active_player=board_state.active_player
-        )
-
-
-    def __get_register_response(self, success: bool, user_1_id: uuid.UUID | None, user_2_id: uuid.UUID | None) -> WebsocketOutgoingCommand:
-        return WebsocketOutgoingCommand(
-            command_type="register_response",
-            user_1_id=user_1_id,
-            user_2_id=user_2_id,
-            success=success
         )
 
 
@@ -50,15 +41,34 @@ class GameMultiplexer:
             next_active_player_id=game_response.next_active_player_id,
         )
 
+    
+    def __get_log_response(self, message: str) -> WebsocketOutgoingCommand:
+        return WebsocketOutgoingCommand(
+            command_type="log",
+            message=message
+        )
+
 
     def create_or_load(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
-        self.games.setdefault(request.game_id, ConnectFourBoard(user_id, None))
+        game = self.games.get(request.game_id)
 
-        return self.__get_board_state_response(request.game_id)
+        if game is None:
+            new_game = ConnectFourBoard(user_id)
+            self.games[request.game_id] = new_game
+            game = new_game
+
+        return self._get_board_state_response(request.game_id)
 
 
+    # In GameMultiplexer
     def disconnect(self, game_id: uuid.UUID, user_id: uuid.UUID) -> None:
-        pass
+        game = self.games.get(game_id)
+        if game:
+            game.deregister_player(user_id) # assuming you implement deregister_player
+            
+            # If the game is now empty, delete it
+            if game.user_1_id is None and game.user_2_id is None:
+                 del self.games[game_id]
 
 
     def process_message(self, request: WebsocketIncomingCommand) -> WebsocketOutgoingCommand:
@@ -72,8 +82,12 @@ class GameMultiplexer:
                 requested_game: ConnectFourBoard = self.games[request.game_id]
                 
                 # Check if the requesting user is registered
-                if request.user_id not in requested_game.get_players():
-                    return self.__get_error_response("user_id not registered in game")
+                players = requested_game.get_players()
+
+                if request.user_id not in players:
+                    print(players)
+                    print(request.user_id in players)
+                    return self.__get_error_response(f"user_id: {request.user_id} not registered in {players}")
 
                 # Check if the requesting user is the active player
                 if request.user_id != requested_game.get_active_player():
@@ -108,15 +122,15 @@ class GameMultiplexer:
 
                 # Register the user and send the response
                 success: bool = game.register_player(request.user_id)
-                users = game.get_players()
-                user_1_id: uuid.UUID | None = users[0]
-                user_2_id: uuid.UUID | None = users[1]
-                return self.__get_register_response(success, user_1_id, user_2_id)
+
+                if not success:
+                    return self.__get_error_response("Error registering user")
+                return self._get_board_state_response(request.game_id)
 
             case "get_board_state":
                 if request.game_id is None:
                     return self.__get_error_response("game_id is missing from get_board_state request")
-                return self.__get_board_state_response(request.game_id)
+                return self._get_board_state_response(request.game_id)
             
             case _:
                 return self.__get_error_response("malformed websocket request")

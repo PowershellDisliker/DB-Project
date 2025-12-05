@@ -67,7 +67,6 @@ class DBClient:
             'Friends', metadata,
             Column('ID1', UUID(as_uuid=True), ForeignKey('Users.ID'), primary_key=True),
             Column('ID2', UUID(as_uuid=True), ForeignKey('Users.ID'), primary_key=True),
-            Column('Accepted', Boolean, nullable=False)
         )
 
         messages = Table(
@@ -156,6 +155,19 @@ class DBClient:
             user_id=identity,
             username=result[0].Username,
             online=result[0].Online
+        )
+
+    
+    def get_public_user_from_username(self, username: str) -> DB_User | None:
+        result = self.__run_query("""SELECT "Username", "Online", "ID" FROM "Users" WHERE "Username" = :username""", {"username": username})
+
+        if not result:
+            return None
+
+        return DB_User(
+            user_id=result[0].ID,
+            username=result[0].Username,
+            online=result[0].Online,
         )
 
 
@@ -266,8 +278,8 @@ class DBClient:
         for row in result]
 
 
-    def post_friend(self, user1id: uuid.UUID, user2id: uuid.UUID) -> bool:
-        result = self.__run_exec("""INSERT INTO "Friends" ("ID1", "ID2", "Accepted") VALUES (:id1, :id2, FALSE)""", {"id1": user1id, "id2": user2id})
+    def post_friend(self, requestor_id: uuid.UUID, requestee_id: uuid.UUID) -> bool:
+        result = self.__run_exec("""INSERT INTO "Friends" ("ID1", "ID2") VALUES (:id1, :id2)""", {"id1": requestor_id, "id2": requestee_id})
 
         if result.rowcount <= 0:
             return False
@@ -275,17 +287,58 @@ class DBClient:
 
 
     def get_friends(self, identity: uuid.UUID) -> list[DB_Friend] | None:
-        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID1" = :id OR "ID2" = :id""", {"id": identity})
+        result = self.__run_query("""
+    SELECT
+        CASE
+            WHEN T1."ID1" = :id THEN T1."ID2"
+            ELSE T1."ID1"
+        END AS ConfirmedFriendID
+    FROM
+        "Friends" AS T1
+    JOIN
+        "Friends" AS T2
+    ON
+        T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+    WHERE
+        T1."ID1" = :id OR T1."ID2" = :id
+    """, {"id": identity})
 
         if not result:
             return None
 
         return [
-            DB_Friend(
-                friend_id=row.ID2 if row.ID2 != identity else row.ID1,
-                accepted=row.Accepted
+        DB_Friend(
+            friend_id=row.ConfirmedFriendID,
         )
         for row in result]
+
+    
+    def get_outgoing_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
+        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID1" = :uid""", {"uid": user_id})
+        
+        user_result = [self.get_public_user(d.ID2) for d in result]
+
+        return [
+            DB_User(
+                user_id=d.user_id,
+                username=d.username,
+                online=d.online
+            )
+        for d in user_result if d is not None]
+
+
+    def get_incoming_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
+        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID2" = :uid""", {"uid": user_id})
+
+        user_result = [self.get_public_user(d.ID1) for d in result]
+
+        return [
+            DB_User(
+                user_id=d.user_id,
+                username=d.username,
+                online=d.online,
+            )
+        for d in user_result if d is not None]
 
 
     def post_message(self, sender: uuid.UUID, recipient: uuid.UUID, message: str) -> bool:
