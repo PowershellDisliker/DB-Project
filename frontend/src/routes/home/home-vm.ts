@@ -5,7 +5,7 @@ export type HomeViewModel = {
     user_details: GetPublicUserResponse | null;
     closed_games: GetClosedGameResponse | null;
     open_games: GetOpenGamesResponse | null;
-    friends: Array<GetPublicUserResponse> | null;
+    friends: Array<User> | null;
     outgoing_friend_requests: Array<User> | null;
     incoming_friend_requests: Array<User> | null;
 

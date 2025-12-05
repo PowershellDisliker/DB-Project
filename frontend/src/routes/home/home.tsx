@@ -49,19 +49,11 @@ function Home() {
             const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
             const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
 
-            let friends_details: Array<GetPublicUserResponse> = []
-
-            if (confirmedFriends.friend_ids) {
-                for (const value of confirmedFriends.friend_ids) {
-                    friends_details.push(await getPublicUser(config.BACKEND_URL, auth.token! ,value[0]));
-                }
-            }
-
             setViewModel(prev => ({
                 ...prev,
                 user_details: userDetails,
                 open_games: openGames,
-                friends: friends_details,
+                friends: confirmedFriends.users,
                 outgoing_friend_requests: outGoingFriendRequests.users,
                 incoming_friend_requests: incomingFriendRequests.users,
             }));
@@ -104,7 +96,7 @@ function Home() {
                 <ul>
                     {viewModel.friends?.map((value) => {
                         return (
-                            <Friend username={value.username} online={value.online} user_id={null} key={value.username}/>
+                            <Friend user={value}/>
                         )
                     })}
 

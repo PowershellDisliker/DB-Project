@@ -69,20 +69,24 @@ export const postClosedGame = async (backend_url: string, jwt: string, request: 
     return postBackend<PostClosedGameResponse>(backend_url, "/api/closedgames", request, jwt);
 }
 
-export const getFriends = async (backend_url: string, jwt: string): Promise<GetFriendResponse> => {
-    return getBackend(backend_url, "/api/friends", jwt);
+export const getFriends = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends", jwt);
 }
 
 export const getIncomingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
-    return getBackend(backend_url, "/api/friends/incoming", jwt);
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends/incoming", jwt);
 }
 
 export const getOutgoingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
-    return getBackend(backend_url, "/api/friends/outgoing", jwt);
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends/outgoing", jwt);
 }
 
 export const postFriend = async (backend_url: string, jwt: string, request: PostFriendRequest): Promise<PostFriendResponse> => {
     return postBackend(backend_url, "/api/friends", request, jwt)
+}
+
+export const removeFriend = async (backend_url: string, jwt: string, request: PostFriendRequest): Promise<PostFriendResponse> => {
+    return postBackend(backend_url, "/api/friends/reject", request, jwt);
 }
 
 export const getMessages = async (backend_url: string, jwt: string): Promise<GetMessageResponse> => {

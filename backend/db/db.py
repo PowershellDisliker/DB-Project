@@ -286,37 +286,66 @@ class DBClient:
         return True
 
 
-    def get_friends(self, identity: uuid.UUID) -> list[DB_Friend] | None:
+    def remove_friend_and_requests(self, requestor_id: uuid.UUID, requestee_id: uuid.UUID) -> bool:
+        result = self.__run_exec("""DELETE FROM "Friends" WHERE ("ID1" = :rqstr_id AND "ID2" = :rqstee_id) OR ("ID1" = :rqstee_id AND "ID2" = :rqstr_id)""",
+        {"rqstr_id": requestor_id, "rqstee_id": requestee_id})
+
+        if result.rowcount <= 0:
+            return False
+        return True
+
+
+    def get_friends(self, identity: uuid.UUID) -> list[DB_User] | None:
         result = self.__run_query("""
-    SELECT
-        CASE
-            WHEN T1."ID1" = :id THEN T1."ID2"
-            ELSE T1."ID1"
-        END AS ConfirmedFriendID
-    FROM
-        "Friends" AS T1
-    JOIN
-        "Friends" AS T2
-    ON
-        T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
-    WHERE
-        T1."ID1" = :id OR T1."ID2" = :id
-    """, {"id": identity})
+            SELECT
+                CASE
+                    WHEN T1."ID1" = :id THEN T1."ID2"
+                    ELSE T1."ID1"
+                END AS "ConfirmedFriendID"
+            FROM
+                "Friends" AS T1
+            JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID1" = :id OR T1."ID2" = :id
+            """, {"id": identity})
 
         if not result:
             return None
 
+        user_data = []
+
+        for row in result:
+            current_user = self.get_public_user(row.ConfirmedFriendID)
+            if current_user not in user_data:
+                user_data.append(current_user)
+
         return [
-        DB_Friend(
-            friend_id=row.ConfirmedFriendID,
+        DB_User(
+            user_id=row.user_id,
+            username=row.username,
+            online=row.online
         )
-        for row in result]
+        for row in user_data if row is not None]
 
     
     def get_outgoing_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
-        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID1" = :uid""", {"uid": user_id})
+        result = self.__run_query("""SELECT
+                T1."ID1" AS "SenderID",
+                T1."ID2" AS "RecipientID"
+            FROM
+                "Friends" AS T1
+            LEFT JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID1" = :id
+                AND T2."ID1" IS NULL;""", {"id": user_id})
         
-        user_result = [self.get_public_user(d.ID2) for d in result]
+        user_result = [self.get_public_user(d.RecipientID) for d in result]
 
         return [
             DB_User(
@@ -328,9 +357,19 @@ class DBClient:
 
 
     def get_incoming_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
-        result = self.__run_query("""SELECT * FROM "Friends" WHERE "ID2" = :uid""", {"uid": user_id})
+        result = self.__run_query("""SELECT
+                T1."ID1" AS "SenderID"
+            FROM
+                "Friends" AS T1
+            LEFT JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID2" = :uid
+                AND T2."ID1" IS NULL;""", {"uid": user_id})
 
-        user_result = [self.get_public_user(d.ID1) for d in result]
+        user_result = [self.get_public_user(d.SenderID) for d in result]
 
         return [
             DB_User(
