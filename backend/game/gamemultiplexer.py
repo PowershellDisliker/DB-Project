@@ -46,13 +46,34 @@ class GameMultiplexer:
         )
 
 
-    def create_or_load(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
+    def create_game(self, user_id: uuid.UUID) -> PostOpenGameResponse:
+        """
+        DESCRIPTION:
+            Creates the game in the multiplexer object and returns the new game_id
+        """
+        new_game_id = uuid.uuid4()
+
+        # In the nearly impossible event that we generate an already used uuid.
+        while new_game_id in self.games.keys():
+            new_game_id = uuid.uuid4()
+
+        self.games[new_game_id] = ConnectFourBoard(user_id)
+
+        return PostOpenGameResponse(
+            success=True,
+            game_id=new_game_id
+        )
+
+
+    def load_game(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
+        """
+        DESCRIPTION:
+            Retrieves the board state of any active game
+        """
         game = self.games.get(request.game_id)
 
         if game is None:
-            new_game = ConnectFourBoard(user_id)
-            self.games[request.game_id] = new_game
-            game = new_game
+            return self.__get_error_response(f"No game with id: {request.game_id}")
 
         return self._get_board_state_response(request.game_id)
 
@@ -134,7 +155,10 @@ class GameMultiplexer:
 
 
     def get_open_game_ids(self) -> list[uuid.UUID]:
-        return list(self.games.keys())
+        result = list(self.games.keys())
+        print(result)
+        return result
+
 
     def get_open_game_detail(self, game_id: uuid.UUID) -> OpenGame:
         game = self.games.get(game_id)
@@ -150,15 +174,4 @@ class GameMultiplexer:
             game_id=game_id,
             user_1_id=game.user_1_id,
             user_2_id=game.user_2_id
-        )
-
-    def create_game(self) -> PostOpenGameResponse:
-        new_game_id = uuid.uuid4()
-
-        while new_game_id in self.games.keys():
-            new_game_id = uuid.uuid4()
-
-        return PostOpenGameResponse(
-            success=True,
-            game_id=new_game_id
         )

@@ -11,6 +11,9 @@ class OpenGame(BaseModel):
 class GetOpenGamesResponse(BaseModel):
     games: list[uuid.UUID] | None = None
 
+class PostOpenGameRequest(BaseModel):
+    user_id: uuid.UUID
+
 class PostOpenGameResponse(BaseModel):
     success: bool
     game_id: uuid.UUID | None = None

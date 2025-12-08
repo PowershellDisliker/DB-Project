@@ -1,14 +1,13 @@
 import {useState, useEffect, useContext} from "react";
 
 import { ConfigContext, AuthContext } from "../../context";
-import type { PostFriendRequest, PostOpenGamesResponse } from "../../dto";
+import type { PostFriendRequest, PostOpenGamesResponse, OpenGame } from "../../dto";
 
 import { LoadingIcon } from '../../components/loading';
 import { Friend } from '../../components/friend';
 import OutgoingFriendRequest from "../../components/outgoing-friend/outgoing-friend";
 import IncomingFriendRequest from "../../components/incoming-friend/incoming-friend";
 import { OpenGameComp } from "../../components/open-game";
-import type { OpenGameProps } from "../../dto/opengame";
 import { PreviousGame } from "../../components/previous-game";
 import { getPublicUser, getOpenGames, getFriends, postOpenGame } from "../../api";
 
@@ -60,11 +59,13 @@ function Home() {
             const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
             const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
 
+            console.log(openGames);
+
             const gameDetailsPromises = openGames.games?.map(game_id => 
                 getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id)
             ) || [];
 
-            const openGameDetails: Array<OpenGameProps> = await Promise.all(gameDetailsPromises);
+            const openGameDetails: Array<OpenGame> = await Promise.all(gameDetailsPromises);
 
             console.log(openGameDetails);
 
@@ -170,7 +171,7 @@ function Home() {
                 <ul>
                     {viewModel.open_games?.map((value) => {
                         return (
-                            <OpenGameComp game={value.game} key={value.game.game_id}/>
+                            <OpenGameComp game_id={value.game_id} user_1_id={value.user_1_id} user_2_id={value.user_2_id} key={value.game_id}/>
                         )
                     })}
                 </ul>

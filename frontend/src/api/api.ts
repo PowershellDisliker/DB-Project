@@ -5,7 +5,7 @@ import {
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
     type GetPublicUserResponse, type GetPrivateUserResponse,
-    type OpenGameProps
+    type OpenGame
 } from "../dto";
 import type { GetFriendRequestsResponse } from "../dto/friend";
 
@@ -101,8 +101,8 @@ export const getOpenGames = async (backend_url: string, jwt: string): Promise<Ge
     return getBackend<GetOpenGamesResponse>(backend_url, "/api/opengames", jwt);
 }
 
-export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGameProps> => {
-    return getBackend<OpenGameProps>(backend_url, `/api/opengames/detail?game_id=${game_id}`, jwt);
+export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGame> => {
+    return getBackend<OpenGame>(backend_url, `/api/opengames/detail?game_id=${game_id}`, jwt);
 }
 
 export const postOpenGame = async (backend_url: string, jwt: string): Promise<PostOpenGamesResponse> => {

@@ -49,7 +49,6 @@ function GameCanvas({game_id}: CanvasProps) {
     if (!game_id || !auth.token) return;
     ws.current = new WebSocket(config!.BACKEND_WS_URL!);
 
-
     // OnOpen
     ws.current!.addEventListener('open', async () => {
       ws.current!.send(JSON.stringify({
@@ -228,7 +227,6 @@ function GameCanvas({game_id}: CanvasProps) {
   const canvasClickHandler = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!viewModel.active_player || !viewModel.game_running) return;
 
-    // --- REPLICATE CORE DRAWING DIMENSION LOGIC ---
     const width = canvasRef.current!.width;
     const height = canvasRef.current!.height;
     const widthMargin = width * marginPercentage;

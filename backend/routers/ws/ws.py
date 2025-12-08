@@ -57,7 +57,7 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
 
         # --- Step 3: send initial game snapshot ---
         sub: uuid.UUID = uuid.UUID(payload.get("sub"))
-        snapshot = game_multiplexer.create_or_load(initial_request, sub)
+        snapshot = game_multiplexer.load_game(initial_request, sub)
         await ws.send_text(snapshot.model_dump_json())
 
         # --- Step 4: main loop ---
@@ -99,9 +99,6 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
 
                 # Check if the game existed before disconnect, and if there are still clients in the room
                 if game_to_broadcast and rooms.get(game_id):
-                    # Now we call the internal method using the stored reference, 
-                    # which is safer, but __get_board_state_response still uses self.games[game_id].
-                    # Let's modify the GameMultiplexer instead for robustness.
                     
                     # For a quick fix, let's just make the call robust:
                     if game_id in game_multiplexer.games: # Re-check existence after disconnect

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from game import GameMultiplexer
 from dependencies import get_current_user_id, get_multiplexer
-from dto import GetOpenGamesResponse, OpenGame, PostOpenGameResponse
+from dto import GetOpenGamesResponse, OpenGame, PostOpenGameResponse, PostOpenGameRequest
 import uuid
 
 router = APIRouter(
@@ -19,5 +19,5 @@ async def get_open_game_detail(game_id: uuid.UUID, game_manager: GameMultiplexer
 
 
 @router.post("/opengames")
-async def post_open_game(game_manager: GameMultiplexer = Depends(get_multiplexer)) -> PostOpenGameResponse:
-    return game_manager.create_game()
+async def post_open_game(user_id: uuid.UUID = Depends(get_current_user_id), game_manager: GameMultiplexer = Depends(get_multiplexer)) -> PostOpenGameResponse:
+    return game_manager.create_game(user_id)
