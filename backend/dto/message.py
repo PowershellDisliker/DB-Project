@@ -4,6 +4,8 @@ import uuid
 
 class Message(BaseModel):
     message_id: uuid.UUID
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
     time_stamp: datetime
     message: str
 

@@ -89,8 +89,8 @@ export const removeFriend = async (backend_url: string, jwt: string, request: Po
     return postBackend(backend_url, "/api/friends/reject", request, jwt);
 }
 
-export const getMessages = async (backend_url: string, jwt: string): Promise<GetMessageResponse> => {
-    return getBackend(backend_url, "/api/messages", jwt)
+export const getMessages = async (backend_url: string, jwt: string, user_id: string): Promise<GetMessageResponse> => {
+    return getBackend(backend_url, `/api/messages?user=${user_id}`, jwt)
 }
 
 export const postMessage = async (backend_url: string, jwt: string, request: PostMessageRequest): Promise<PostMessageResponse> => {

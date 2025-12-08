@@ -1,7 +1,7 @@
 import { ConfigContext, type Config, AuthContext} from "./context";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { Login, Home, Game, Base } from "./routes";
+import { Login, Home, Game, Base, Messages } from "./routes";
 
 function App() {
 
@@ -23,6 +23,7 @@ function App() {
             <Route path="/home" element={<Home/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/game" element={<Game />} />
+            <Route path="/messages" element={<Messages />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>

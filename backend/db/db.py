@@ -353,7 +353,7 @@ class DBClient:
 
 
     def get_messages(self, inbox_owner: uuid.UUID, external_contact: uuid.UUID) -> list[DB_Message] | None:
-        result = self.__run_query("""SELECT "ID", "Message", "TimeStamp" FROM "Messages" WHERE "SenderID" = :io AND "RecipientID" = :ec""", 
+        result = self.__run_query("""SELECT "ID", "Message", "TimeStamp" FROM "Messages" WHERE ("SenderID" = :io AND "RecipientID" = :ec) OR ("SenderID" = :ec AND "RecipientID" = :io)""", 
             {"io": inbox_owner, "ec": external_contact}
         )
 

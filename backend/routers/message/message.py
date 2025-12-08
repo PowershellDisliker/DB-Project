@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from backend.dto.db import DB_Message
 from db import DBClient
 from dependencies import get_db, get_current_user_id
 from dto import GetMessageResponse, PostMessageRequest, PostMessageResponse, Message
@@ -9,8 +10,8 @@ router = APIRouter(
 )
 
 @router.get("/messages")
-async def get_messages(sender_id: str, current_user = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetMessageResponse:
-    data = db.get_messages(current_user.user_id, uuid.UUID(sender_id))
+async def get_messages(outbound_user_id: str, current_user = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetMessageResponse:
+    data: list[DB_Message] | None = db.get_messages(current_user.user_id, uuid.UUID(outbound_user_id))
 
     if data is None:
         return GetMessageResponse()
@@ -21,10 +22,14 @@ async def get_messages(sender_id: str, current_user = Depends(get_current_user_i
             Message(
                 message_id=d.message_id,
                 time_stamp=d.time_stamp,
-                message=d.message
+                message=d.message,
+                sender_id=d.sender_id,
+                recipient_id=d.recipient_id
             ) for d in data if d.message_id is not None and
                              d.time_stamp is not None and 
-                             d.message is not None
+                             d.message is not None and
+                             d.sender_id is not None and
+                             d.recipient_id is not None
         ] 
     )
 

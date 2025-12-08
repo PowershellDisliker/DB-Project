@@ -1,6 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import type { OpenGame } from '../../dto/opengame';
 import globalStyles from '../../global.module.css';
 import { getPublicUser } from '../../api';
@@ -43,7 +42,9 @@ function OpenGameComp({game_id, user_1_id, user_2_id}: OpenGame) {
         <div className={globalStyles.roundedContainer}>
                 <p>Player 1: {user1Username}</p>
                 <p>Player 2: {user2Username}</p>
-            <button onClick={joinGame}>Join or Spectate Game</button>
+            <button onClick={joinGame}>
+                {user_2_id ? "Spectate Game" : "Join Game"}
+            </button>
         </div>
     )
 }
