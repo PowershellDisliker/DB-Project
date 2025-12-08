@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 from typing import Optional
 from dto import DB_ClosedGame, DB_Message, DB_Token, DB_User
+from datetime import datetime
 
 
 class DBClient:
@@ -193,29 +194,26 @@ class DBClient:
         return True
 
 
-    def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID, pieces: list[uuid.UUID | None]) -> DB_ClosedGame | None:
-        result = self.__run_query("""SELECT * FROM "OpenGames" where "ID" = :id""", {"id": game_id})
+    def post_closed_game(self,
+                        game_id: uuid.UUID,
+                        user_1_id: uuid.UUID,
+                        user_2_id: uuid.UUID,
+                        start_time: datetime,
+                        winner_id: uuid.UUID,
+                        pieces: list[uuid.UUID | None]) -> DB_ClosedGame | None:
 
-        if not result:
-            return None
-
-        insert_result = self.__run_exec("""INSERT INTO "ClosedGames" ("ID", "User1ID", "User2ID", "StartTime", "Winner") VALUES (:id, :user1id, :user2id, :starttime, :winner)""",
-            {"id": result[0].ID, "user1id": result[0].User1ID, "user2id": result[0].User2ID, "starttime": result[0].StartTime, "winner": winner_id}
+        insert_result = self.__run_exec("""INSERT INTO "ClosedGames" ("ID", "User1ID", "User2ID", "StartTime", "Winner", "Pieces") VALUES (:id, :user1id, :user2id, :starttime, :winner, :pieces)""",
+            {"id": game_id, "user1id": user_1_id, "user2id": user_2_id, "starttime": start_time, "winner": winner_id, "pieces": pieces}
         )
 
         if insert_result.rowcount <= 0:
             return None
 
-        delete_result = self.__run_exec("""DELETE FROM "OpenGames" WHERE "ID" = :id""", {"id": game_id})
-
-        if delete_result.rowcount <= 0:
-            return None
-
         return DB_ClosedGame(
-            game_id=result[0].ID,
-            user_1_id=result[0].User1ID,
-            user_2_id=result[0].User2ID,
-            start_time=result[0].StartTime,
+            game_id=game_id,
+            user_1_id=user_1_id,
+            user_2_id=user_2_id,
+            start_time=start_time,
             winner=winner_id,
             pieces=pieces
         )

@@ -1,5 +1,6 @@
 Post game to closedgames when websocket sees a winner
-
-Retrieve and render closed games
+    Should the backend handle this part?
 
 Implement Messages
+
+Implement Refresh tokens(?)

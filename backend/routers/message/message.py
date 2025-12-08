@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
-from backend.dto.db import DB_Message
 from db import DBClient
 from dependencies import get_db, get_current_user_id
-from dto import GetMessageResponse, PostMessageRequest, PostMessageResponse, Message
+from dto import GetMessageResponse, PostMessageRequest, PostMessageResponse, Message, DB_Message
 import uuid
 
 router = APIRouter(
