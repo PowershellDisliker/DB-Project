@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from config import Config
-from dependencies import get_config, get_multiplexer
+from dependencies import get_config, get_multiplexer, get_db
 from game import GameMultiplexer
 from dto import WebsocketGameRequest, WebsocketIncomingCommand, WebsocketOutgoingCommand
 import jwt
@@ -79,6 +79,11 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
                 # After a successful registration or piece drop, broadcast the full board state
                 board_state_response = game_multiplexer._get_board_state_response(initial_request.game_id)
                 await broadcast(initial_request.game_id, board_state_response.model_dump_json())
+            
+            if response.command_type == "drop_piece_response" and response.winner_id is not None and command.game_id:
+                db = get_db()
+                game_to_close = game_multiplexer.get_open_game_detail(command.game_id)
+                db.post_closed_game(command.game_id, game_to_close.user_1_id, game_to_close.user_2_id, )
 
     except WebSocketDisconnect:
         pass

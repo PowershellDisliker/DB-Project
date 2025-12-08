@@ -65,7 +65,7 @@ class GameMultiplexer:
         )
 
 
-    def load_game(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
+    def load_game(self, request: WebsocketGameRequest) -> WebsocketOutgoingCommand:
         """
         DESCRIPTION:
             Retrieves the board state of any active game
