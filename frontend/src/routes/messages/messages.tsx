@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
-import { type GetMessageResponse } from '../../dto';
+import { type GetMessageResponse, type PostMessageRequest } from '../../dto';
 import { MessageComp } from '../../components/message';
 import { AuthContext, ConfigContext } from '../../context';
 import { getMessages } from '../../api';
 import { useSearchParams } from 'react-router-dom';
+import { postUserMessage } from '../../api';
 
 function Messages() {
     const auth = useContext(AuthContext);
@@ -19,6 +20,7 @@ function Messages() {
     )
 
     const [messages, setMessages] = useState<GetMessageResponse | null>(null);
+    const [messageInput, setMessageInput] = useState<string>("");
 
     const compGetMessages = async () => {
          setMessages(await getMessages(config.BACKEND_URL, auth.token!, outbound_user_id));
@@ -31,6 +33,13 @@ function Messages() {
         inner();
     }, [])
 
+    const sendHandler = async () => {
+        await postUserMessage(config.BACKEND_URL, auth.token!, {
+            recipient_id: outbound_user_id,
+            message: messageInput,
+        } as PostMessageRequest)
+    }
+
     return (
         <div>
             <ul>
@@ -38,6 +47,8 @@ function Messages() {
                     <MessageComp sender_id={value.sender_id} recipient_id={value.recipient_id} time_stamp={value.time_stamp} message={value.message} message_id={value.message_id} key={value.message_id}/>
                 )}
             </ul>
+            <input type="text" onChange={(event) => setMessageInput(event.target.value)} />
+            <button onClick={sendHandler}>Send</button>
         </div>
     )
 }

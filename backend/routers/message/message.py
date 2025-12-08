@@ -9,8 +9,8 @@ router = APIRouter(
 )
 
 @router.get("/messages")
-async def get_messages(outbound_user_id: str, current_user = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetMessageResponse:
-    data: list[DB_Message] | None = db.get_messages(current_user.user_id, uuid.UUID(outbound_user_id))
+async def get_messages(user: str, current_user = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetMessageResponse:
+    data: list[DB_Message] | None = db.get_messages(current_user, uuid.UUID(user))
 
     if data is None:
         return GetMessageResponse()

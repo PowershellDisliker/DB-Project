@@ -93,7 +93,7 @@ export const getMessages = async (backend_url: string, jwt: string, user_id: str
     return getBackend(backend_url, `/api/messages?user=${user_id}`, jwt)
 }
 
-export const postMessage = async (backend_url: string, jwt: string, request: PostMessageRequest): Promise<PostMessageResponse> => {
+export const postUserMessage = async (backend_url: string, jwt: string, request: PostMessageRequest): Promise<PostMessageResponse> => {
     return postBackend(backend_url, "/api/messages", request, jwt)
 }
 

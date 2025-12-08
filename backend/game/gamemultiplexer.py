@@ -167,11 +167,13 @@ class GameMultiplexer:
             return OpenGame(
                 game_id=game_id,
                 user_1_id=None,
-                user_2_id=None
+                user_2_id=None,
+                start_time=None
             )
         
         return OpenGame(
             game_id=game_id,
             user_1_id=game.user_1_id,
-            user_2_id=game.user_2_id
+            user_2_id=game.user_2_id,
+            start_time=game.start_time
         )
