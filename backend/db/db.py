@@ -58,7 +58,7 @@ class DBClient:
         
         friends = Table(
             'Friends', metadata,
-            Column('ID1', UUID, ForeignKey('users.id')),
+                Column('ID1', UUID, ForeignKey('users.id')),
             Column('ID2', UUID, ForeignKey('users.id')),
             Column('Accepted', Boolean, nullable=False)
         )

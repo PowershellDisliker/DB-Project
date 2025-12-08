@@ -3,14 +3,6 @@ import json
 BOARD_COLUMNS: int = 7
 BOARD_ROWS: int = 6
 
-class node:
-    connected: list[edgeNode]
-    Piece: Piece # will prolly need this for connecting only the nodes that are from the same player
-
-class edgeNode:
-    to: node
-    direction: int # could do 0 - 7 for the direction of the connection 1 at top left moving clockwise around
-
 class gameState:
     # object for sending data to the visulaizer in the front end
     # needs the board, player turn, if the game is running, who won
@@ -45,29 +37,40 @@ class gameState:
 
 class Piece:
     owner_number: int | None
-    piece_type: int
-    def __init__(self, player: int, type: int):
+    def __init__(self, player: int):
         self.owner_number = player
-        self.piece_type = type
         
-
 class ConnectFourBoard:
     # board object that holds the possitions of the chips
     player_1_id: int
     player_2_id: int
-    positions: list[list[Piece]] = [[None for _ in range(BOARD_COLUMNS)] for _ in range(BOARD_ROWS)] # should fill the matrix with "blank" pieces
+    positions: list[list[Piece]] = [[None for _ in range(BOARD_COLUMNS)] for _ in range(BOARD_ROWS)] # should fill the matrix with None until a piece is dropped
 
     
     def __init__(self, p1_id: int, p2_id: int) -> None:
         self.player_1_id = p1_id
         self.player_2_id = p2_id
 
-    def drop_piece(self, piece_owner: int, piece_type: int, column: int) -> bool:
+
+    def drop_piece(self, piece_owner: int, column: int) -> bool:
         """
         Attempts to drop a connect 4 piece into the board at a specific column.
 
         Returns true if possible and successful, false otherwise.
         """
+        for i in self.positions: # loop through the lists in position
+            if(i[column] != None):
+                #should be the first avalible position 
+                i[column] = Piece(piece_owner) # create a new piece
+        winner = self.check_for_winner()
+        if(winner != -1):
+            if(winner == 1): # player 1 wins
+                # need to decide how it will send out who the winner is·
+                pass
+            if(winner == 0): # player 0 wins
+                pass
+
+
         if column < 0 or column >= BOARD_COLUMNS:
             return False
 
@@ -83,9 +86,9 @@ class ConnectFourBoard:
 
         return -1
     
-    def dfsWinner(positions: list[list[Piece]], moveCount: int):
+    def dfsWinner(positions: list[list[Piece]], moveCount: int, lastMove:int):
         # should return true if a winner is found
-
+        # want to start from the last move so we c
         return 
 
     def print_board(self) -> None:
