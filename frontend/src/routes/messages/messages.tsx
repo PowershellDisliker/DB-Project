@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { type GetMessageResponse } from '../../dto';
-import {Message} from '../../components/message';
+import { MessageComp } from '../../components/message';
 import { AuthContext, ConfigContext } from '../../context';
 import { getMessages } from '../../api';
 import { useSearchParams } from 'react-router-dom';
@@ -35,7 +35,7 @@ function Messages() {
         <div>
             <ul>
                 {messages?.messages.map((value) => 
-                    <Message key={value.message_id}/>
+                    <MessageComp sender_id={value.sender_id} recipient_id={value.recipient_id} time_stamp={value.time_stamp} message={value.message} message_id={value.message_id} key={value.message_id}/>
                 )}
             </ul>
         </div>

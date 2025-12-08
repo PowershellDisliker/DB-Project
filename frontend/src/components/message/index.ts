@@ -1,3 +1,3 @@
-import Message from './Message';
+import MessageComp from './Message';
 
-export {Message}
+export {MessageComp}
