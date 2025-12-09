@@ -1,6 +1,7 @@
 from typing import Tuple
 from dto import BoardState, DropPieceResponse
 import uuid
+from datetime import datetime
 
 # Holup
 ROW_COUNT: int = 6
@@ -14,6 +15,8 @@ class ConnectFourBoard:
 
         self.active_player: uuid.UUID = user_1_id
         self.winner_id: uuid.UUID | None = None
+
+        self.start_time = datetime.now()
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 
