@@ -167,10 +167,10 @@ class ConnectFourBoard:
             down = 0
             for i in range(3):
                 if(recent_piece_index // 7 >= 3): # up is possible
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + (i * 7)]): # check down
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check down
                         up = up + 1
                 if(recent_piece_index // 7 <= 2): # down is possible
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check up
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + (i * 7)]): # check up
                         down = down + 1
             if(up >= 4):
                 return self.positions[recent_piece_index]
