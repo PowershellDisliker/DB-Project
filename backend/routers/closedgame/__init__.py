@@ -1,0 +1,1 @@
+from .closedgame import router as closedgame_router

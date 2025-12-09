@@ -1,18 +1,26 @@
 import bcrypt
 import uuid
-import time
 
-from sqlalchemy import select, create_engine, Table, Column, Integer, String, Engine, MetaData, LargeBinary, ForeignKey, UnicodeText, text, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import select, create_engine, Table, Column, Integer, String, Engine, MetaData, LargeBinary, ForeignKey, UnicodeText, text, Boolean, DateTime
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.sql import func
 from typing import Optional
-from dto import *
+from dto import DB_ClosedGame, DB_Message, DB_Token, DB_User
+from datetime import datetime
 
 
 class DBClient:
     uri: str
     engine: Engine
 
-    def __init__(self, endpoint: str, db_name: str):
+    users: Table
+    active_tokens: Table
+    open_games: Table
+    closed_games: Table
+    friends: Table
+    messages: Table
+
+    def __init__(self, endpoint: str, db_name: str) -> None:
         self.uri = endpoint
         self.engine = create_engine(endpoint, isolation_level='AUTOCOMMIT')
 
@@ -26,51 +34,48 @@ class DBClient:
 
         users = Table(
             'Users', metadata,
-            Column('ID', UUID, primary_key=True),
+            Column('ID', UUID(as_uuid=True), primary_key=True),
             Column('Username', String(32), nullable=False, unique=True),
             Column('PassHash', String(256), nullable=False),
             Column('Online', Boolean())
         )
 
         active_tokens = Table(
-            'ActiveTokens', metadata,
-            Column('UserID', UUID, ForeignKey('Users.ID'), primary_key=True),
-            Column('Token', String(32))
-        )
-
-        open_games = Table(
-            'OpenGames', metadata,
-            Column('ID', UUID, primary_key=True),
-            Column('User1ID', UUID, ForeignKey('Users.ID')),
-            Column('User2ID', UUID, ForeignKey('Users.ID'), nullable=True),
-            Column('StartTime', Integer, nullable=False)
+            'BlockedTokens', metadata,
+            Column('Token', String(256), primary_key=True)
         )
 
         closed_games = Table(
             'ClosedGames', metadata,
-            Column('ID', UUID, primary_key=True),
-            Column('User1ID', UUID, ForeignKey('users.id')),
-            Column('User2ID', UUID, ForeignKey('users.id')),
-            Column('StartTime', Integer, nullable=False),
-            Column('EndTime', Integer, nullable=False),
-            Column('Winner', UUID, ForeignKey('users.id'))
+            Column('ID', UUID(as_uuid=True), primary_key=True),
+            Column('User1ID', UUID(as_uuid=True), ForeignKey('Users.ID')),
+            Column('User2ID', UUID(as_uuid=True), ForeignKey('Users.ID')),
+            Column('StartTime', DateTime(timezone=True), server_default=func.now()),
+            Column('EndTime', DateTime(timezone=True), server_default=func.now()),
+            Column('Winner', UUID(as_uuid=True), ForeignKey('Users.ID')),
+            Column('Pieces', ARRAY(UUID(as_uuid=True)), nullable=False)
         )
         
         friends = Table(
             'Friends', metadata,
-                Column('ID1', UUID, ForeignKey('users.id')),
-            Column('ID2', UUID, ForeignKey('users.id')),
-            Column('Accepted', Boolean, nullable=False)
+            Column('ID1', UUID(as_uuid=True), ForeignKey('Users.ID'), primary_key=True),
+            Column('ID2', UUID(as_uuid=True), ForeignKey('Users.ID'), primary_key=True),
         )
 
         messages = Table(
             'Messages', metadata,
-            Column('ID', UUID, primary_key=True),
-            Column('TimeStamp', Integer, nullable=False),
-            Column('SenderID', UUID, ForeignKey('users.id')),
-            Column('RecipientID', UUID, ForeignKey('users.id')),
+            Column('ID', UUID(as_uuid=True), primary_key=True),
+            Column('TimeStamp', DateTime(timezone=True), server_default=func.now()),
+            Column('SenderID', UUID(as_uuid=True), ForeignKey('Users.ID')),
+            Column('RecipientID', UUID(as_uuid=True), ForeignKey('Users.ID')),
             Column('Message', UnicodeText)
         )
+
+        self.users = users
+        self.active_tokens = active_tokens
+        self.closed_games = closed_games
+        self.friends = friends
+        self.messages = messages
 
         metadata.create_all(self.engine)
 
@@ -86,173 +91,278 @@ class DBClient:
             return conn.execute(text(query), params or {})
 
     # Specific data functions, these are what will be called in app.py
-    def validate_user(self, user: str, passw: str) -> bool:
+    def validate_user(self, user: str, passw: str) -> DB_User | None:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """
-        result = self.__run_query("SELECT PassHash FROM Users WHERE Username = :username", {"username": user})
+        result = self.__run_query("""SELECT "ID", "PassHash", "Username" FROM "Users" WHERE "Username" = :username""", {"username": user})
 
         if not result:
-            return False
+            return None
 
-        return bcrypt.checkpw(passw.encode("utf-8"), result[0].passhash.encode("utf-8"))
+        if not bcrypt.checkpw(passw.encode("utf-8"), result[0].PassHash.encode("utf-8")):
+            return None
 
+        return DB_User(
+            user_id=result[0].ID,
+            username=result[0].Username,
+        )
+        
 
-    def post_user(self, user: str, passw: str) -> Optional[uuid.UUID]:
+    def post_user(self, user: str, passw: str) -> DB_User | None:
         """
         HANDLES THE ENCRYPTION OF PASSWORD
         """
 
         salt = bcrypt.gensalt(rounds=12)
-        hashed = bcrypt.hashpw(passw, salt).decode("utf-8")
+        hashed = bcrypt.hashpw(passw.encode(), salt).decode()
 
         try:
             identity = uuid.uuid4()
-            self.__run_exec("INSERT INTO Users (ID, Username, PassHash, Online) VALUES (:id, :uname, :passhash, :online)",
+
+            result = self.__run_exec("""INSERT INTO "Users" ("ID", "Username", "PassHash", "Online") VALUES (:id, :uname, :passhash, :online)""",
                 {"id": identity, "uname": user, "passhash": hashed, "online": True})
-            return identity
+
+            if result.rowcount <= 0:
+                return None
+
+            return DB_User(
+                user_id=identity,
+                username=user,
+                online=True
+            )
 
         except Exception as e:
             print(e)
             return None
 
-    
-    def get_public_user(self, identity) -> Optional[PublicUserDetails]:
-        result = self.__run_query("SELECT Username FROM Users WHERE ID = :identity", {"identity": identity})
 
-        if not result:
-            return False
-
-        user_details = {
-            "identity": result[0].id,
-            "username": result[0].username,
-        }
-
-        return user_details
-
-
-    def get_private_user(self, identity: UUID) -> Optional[PrivateUserDetails]:
-        result = self.__run_exec("SELECT * FROM User WHERE ID = :id", {"id": identity})
+    def get_public_user(self, identity: uuid.UUID) -> DB_User | None:
+        result = self.__run_query("""SELECT "Username", "Online" FROM "Users" WHERE "ID" = :identity""", {"identity": identity})
 
         if not result:
             return None
 
-        return result[0]
+        return DB_User(
+            user_id=identity,
+            username=result[0].Username,
+            online=result[0].Online
+        )
+
+    
+    def get_public_user_from_username(self, username: str) -> DB_User | None:
+        result = self.__run_query("""SELECT "Username", "Online", "ID" FROM "Users" WHERE "Username" = :username""", {"username": username})
+
+        if not result:
+            return None
+
+        return DB_User(
+            user_id=result[0].ID,
+            username=result[0].Username,
+            online=result[0].Online,
+        )
 
 
-    def post_token(self, identity: str, token: str) -> bool:
-        result = self.__run_exec("INSERT INTO ActiveTokens (Token, UserID) VALUES (:token, :user)", {"token": token, "user": identity})
-        return result
+    def get_private_user(self, user_id: uuid.UUID) -> DB_User | None:
+        result = self.__run_query("""SELECT "Username", "PassHash", "Online" FROM "Users" WHERE "ID" = :identity""", {"identity": user_id})
+
+        if not result:
+            return None
+
+        return DB_User(
+            user_id=user_id,
+            username=result[0].Username,
+            pass_hash=result[0].PassHash,
+            online=result[0].Online
+        )
 
 
-    def get_token(self, identity: uuid.UUID, token: str) -> bool:
-        token_exists = self.__run_query("SELECT * FROM ActiveTokens WHERE UserID = :id AND Token = :tok", {"id": identity, "tok": token})
-
-        if token_exists is None:
-            return False
-        return True
-
-
-    def post_open_game(self, user1id: str) -> bool:
-        result = self.__run_exec("INSERT INTO ActiveTokens (ID, User1ID, StartTime) VALUES (:id, :user1, :start)", 
-            {"id": uuid.uuid4(), "user1": user1id, "starttime": time.now()})
+    def post_token(self, token: str) -> bool:
+        result = self.__run_exec("""INSERT INTO "BlockedTokens" ("Token") VALUES (:token)""", {"token": token})
 
         if result.rowcount <= 0:
             return False
         return True
 
 
-    def get_open_games(self) -> Optional[list[OpenGame]]:
-        result = self.__run_query("SELECT * FROM ActiveGames")
+    def get_token(self, token: str) -> bool:
+        result = self.__run_query("""SELECT * FROM "BlockedTokens" WHERE "Token" = :token""", {"token": token})
+
+        if not result:
+            return False
+        return True
+
+
+    def post_closed_game(self,
+                        game_id: uuid.UUID,
+                        user_1_id: uuid.UUID,
+                        user_2_id: uuid.UUID,
+                        start_time: datetime,
+                        winner_id: uuid.UUID,
+                        pieces: list[uuid.UUID | None]) -> DB_ClosedGame | None:
+
+        insert_result = self.__run_exec("""INSERT INTO "ClosedGames" ("ID", "User1ID", "User2ID", "StartTime", "Winner", "Pieces") VALUES (:id, :user1id, :user2id, :starttime, :winner, :pieces)""",
+            {"id": game_id, "user1id": user_1_id, "user2id": user_2_id, "starttime": start_time, "winner": winner_id, "pieces": pieces}
+        )
+
+        if insert_result.rowcount <= 0:
+            return None
+
+        return DB_ClosedGame(
+            game_id=game_id,
+            user_1_id=user_1_id,
+            user_2_id=user_2_id,
+            start_time=start_time,
+            winner=winner_id,
+            pieces=pieces
+        )
+
+
+    def get_closed_games(self, identity: str) -> list[DB_ClosedGame] | None:
+        result = self.__run_query("""SELECT * FROM "ClosedGames" WHERE "User1ID" = :id OR "User2ID" = :id""", {"id": identity})
 
         if not result:
             return None
 
         return [
-            {
-                "identity": current.id,
-                "user1id": current.user1id,
-                "user2id": current.user2id,
-                "starttime": current.starttime
-            } 
-            for current in result ]
-
-
-    def post_closed_game(self, game_id: uuid.UUID, winner_id: uuid.UUID) -> bool:
-        query_result = self.__run_query("SELECT * FROM ActiveGames where ID = :id", {"id": game_id})
-
-        if query_result is None:
-            return False
-
-        game_data: OpenGame = {
-            "identity": query_result[0].id,
-            "user1id": query_result[0].user1id,
-            "user2id": query_result[0].user2id,
-            "starttime": query_result[0].starttime,
-        }
-
-        insert_result = run_exec(
-            "INSERT INTO ClosedGames (ID, User1ID, User2ID, StartTime, EndTime, Winner) VALUES (:id, :user1id, :user2id, :starttime, :endtime, :winner)",
-            {"id": game_data.identitty, "user1id": game_data.user1id, "user2id": game_data.user2id, "starttime": game_data.starttime, "endtime": time.now(), "winner": winner_id}
+            DB_ClosedGame(
+                game_id=row.ID,
+                user_1_id=row.User1ID,
+                user_2_id=row.User2ID,
+                start_time=row.StartTime,
+                end_time=row.EndTime,
+                winner=row.Winner,
+                pieces=row.Pieces,
             )
+        for row in result]
 
-        if insert_result is None:
+
+    def post_friend(self, requestor_id: uuid.UUID, requestee_id: uuid.UUID) -> bool:
+        result = self.__run_exec("""INSERT INTO "Friends" ("ID1", "ID2") VALUES (:id1, :id2)""", {"id1": requestor_id, "id2": requestee_id})
+
+        if result.rowcount <= 0:
             return False
         return True
 
 
-    def get_closed_games(self, identity: str) -> Optional[list[ClosedGame]]:
-        result = self.__run_query("SELECT * FROM ClosedGames")
+    def remove_friend_and_requests(self, requestor_id: uuid.UUID, requestee_id: uuid.UUID) -> bool:
+        result = self.__run_exec("""DELETE FROM "Friends" WHERE ("ID1" = :rqstr_id AND "ID2" = :rqstee_id) OR ("ID1" = :rqstee_id AND "ID2" = :rqstr_id)""",
+        {"rqstr_id": requestor_id, "rqstee_id": requestee_id})
 
-        if result is None:
+        if result.rowcount <= 0:
+            return False
+        return True
+
+
+    def get_friends(self, identity: uuid.UUID) -> list[DB_User] | None:
+        result = self.__run_query("""
+            SELECT
+                CASE
+                    WHEN T1."ID1" = :id THEN T1."ID2"
+                    ELSE T1."ID1"
+                END AS "ConfirmedFriendID"
+            FROM
+                "Friends" AS T1
+            JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID1" = :id OR T1."ID2" = :id
+            """, {"id": identity})
+
+        if not result:
             return None
+
+        user_data = []
+
+        for row in result:
+            current_user = self.get_public_user(row.ConfirmedFriendID)
+            if current_user not in user_data:
+                user_data.append(current_user)
 
         return [
-            {
-                "identity": instance.identity,
-                "user1id": instance.user1id,
-                "user2id": instance.user2id,
-                "starttime": instance.starttime,
-                "endtime": instance.endtime,
-                "winner": instance.winner,
-            } 
-        for instance in result]
+        DB_User(
+            user_id=row.user_id,
+            username=row.username,
+            online=row.online
+        )
+        for row in user_data if row is not None]
+
+    
+    def get_outgoing_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
+        result = self.__run_query("""SELECT
+                T1."ID1" AS "SenderID",
+                T1."ID2" AS "RecipientID"
+            FROM
+                "Friends" AS T1
+            LEFT JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID1" = :id
+                AND T2."ID1" IS NULL;""", {"id": user_id})
+        
+        user_result = [self.get_public_user(d.RecipientID) for d in result]
+
+        return [
+            DB_User(
+                user_id=d.user_id,
+                username=d.username,
+                online=d.online
+            )
+        for d in user_result if d is not None]
 
 
-    def post_friend(self, user1id: uuid.UUID, user2id: uuid.UUID) -> bool:
-        result = sef.__run_exec("INSERT INTO Friends (ID1, ID2) VALUES (:id1, :id2)", {"id1": user1id, "id2": user2id})
+    def get_incoming_friend_request_users(self, user_id: uuid.UUID) -> list[DB_User] | None:
+        result = self.__run_query("""SELECT
+                T1."ID1" AS "SenderID"
+            FROM
+                "Friends" AS T1
+            LEFT JOIN
+                "Friends" AS T2
+            ON
+                T1."ID1" = T2."ID2" AND T1."ID2" = T2."ID1"
+            WHERE
+                T1."ID2" = :uid
+                AND T2."ID1" IS NULL;""", {"uid": user_id})
 
-        if result is None:
-            return None
+        user_result = [self.get_public_user(d.SenderID) for d in result]
 
-        return result
-
-
-    def get_friends(self, identity: uuid.UUID) -> list[Friend]:
-        result = self.__run_query("SELECT * FROM Friends WHERE ID1 = :id OR ID2 = :id", {"id": identity})
-
-        if result is None:
-            return None
-
-        return result
+        return [
+            DB_User(
+                user_id=d.user_id,
+                username=d.username,
+                online=d.online,
+            )
+        for d in user_result if d is not None]
 
 
     def post_message(self, sender: uuid.UUID, recipient: uuid.UUID, message: str) -> bool:
-        result = self.__run_exec("INSERT INTO Messages (ID, TimeStamp, SenderID, RecipientID, Message) VALUES (:id, :ts, :si, :ri, m)", 
-            {"id": uuid.uuid4(), "ts": time.now(), "si": sender, "ri": recipient, "m": message}
+        result = self.__run_exec("""INSERT INTO "Messages" ("ID", "SenderID", "RecipientID", "Message") VALUES (:id, :si, :ri, :m)""", 
+            {"id": uuid.uuid4(), "si": sender, "ri": recipient, "m": message}
         )
 
-        if result.rows_affected <= 0:
+        if result.rowcount <= 0:
             return False
         return True
 
 
-    def get_messages(self, inbox_owner: uuid.UUID, external_contact: uuid.UUID) -> list[Message]:
-        result = self.__run_query("SELECT (ID, Message, TimeStamp) FROM Messages WHERE SenderID = :io AND RecipientID = :ec", 
+    def get_messages(self, inbox_owner: uuid.UUID, external_contact: uuid.UUID) -> list[DB_Message] | None:
+        result = self.__run_query("""SELECT "ID", "Message", "TimeStamp" FROM "Messages" WHERE ("SenderID" = :io AND "RecipientID" = :ec) OR ("SenderID" = :ec AND "RecipientID" = :io)""", 
             {"io": inbox_owner, "ec": external_contact}
         )
 
-        if result is None:
+        if not result:
             return None
 
-        return result
+        return [
+            DB_Message(
+                message_id=row.ID,
+                time_stamp=row.TimeStamp,
+                sender_id=external_contact,
+                recipient_id=inbox_owner,
+                message=row.Message
+            )
+        for row in result]

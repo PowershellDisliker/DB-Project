@@ -1,0 +1,1 @@
+from .friend import router as friend_router

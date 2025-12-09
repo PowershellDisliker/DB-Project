@@ -1,3 +1,13 @@
+html, body, #root { 
+    height: 100%;
+    margin: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding-inline-start: 0px;
+}
+
 :root {
     --foreground-color: #333333;
     --background-color: #cecccc;
@@ -16,6 +26,17 @@ body {
     color: var(--foreground-color);
 }
 
+button {
+    transition: background-color 0.1s ease-in-out;
+    background-color: var(--muted-blue);
+    border-radius: 20%;
+}
+
+button:hover {
+    background-color: var(--muted-green);
+    cursor: pointer;
+}
+
 .roundedContainer {
     border-radius: 8px;
     border: 2px solid var(--foreground-color); 
@@ -25,6 +46,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.height {
+    height: 100%;
 }
 
 .globalCenter {
@@ -48,4 +73,16 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.margin {
+    margin: 5px;
+}
+
+.centerText {
+    text-align: center;
+}
+
+.scroll {
+    overflow-y: scroll;
 }

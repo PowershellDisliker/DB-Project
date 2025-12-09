@@ -1,0 +1,35 @@
+from pydantic import BaseModel
+from typing import Literal
+import uuid
+
+# Websocket Data Models
+class WebsocketGameRequest(BaseModel):
+    jwt: str
+    game_id: uuid.UUID
+
+class WebsocketIncomingCommand(BaseModel):
+    command_type: Literal["drop_piece", "register_user", "get_board_state"]
+    game_id: uuid.UUID | None = None
+    col: int | None = None
+    user_id: uuid.UUID
+
+class WebsocketOutgoingCommand(BaseModel):
+    command_type: Literal["error", "board_state", "drop_piece_response", "log"]
+    
+    error: str | None = None
+
+    message: str | None = None
+    
+    user_id: uuid.UUID | None = None
+
+    user_1_id: uuid.UUID | None = None
+    user_2_id: uuid.UUID | None = None
+    board_state: list[uuid.UUID | None] | None = None
+    active_player: uuid.UUID | None = None
+    next_active_player_id: uuid.UUID | None = None
+
+    row: int | None = None
+    col: int | None = None
+    
+    success: bool | None = None
+    winner_id: uuid.UUID | None = None

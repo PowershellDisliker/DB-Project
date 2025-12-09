@@ -1,0 +1,1 @@
+from .opengame import router as opengame_router
