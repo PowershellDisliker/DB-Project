@@ -147,11 +147,11 @@ class ConnectFourBoard:
             # check the col or left and right
             right = 0
             left = 0
-            for i in range(3):
-                if((recent_piece_index + 3) % 7 <= 3): # possible on the right
+            for i in range(4):
+                if((recent_piece_index + 4) % 7 <= 3): # possible on the right
                     if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i]): # check right
                         right = right + 1
-                if((recent_piece_index - 3) % 7 >= 3): # possible on the left
+                if((recent_piece_index - 4) % 7 >= 3): # possible on the left
                     if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i]): # check left
                         left = left + 1
             if(right >= 4):
@@ -165,7 +165,7 @@ class ConnectFourBoard:
             # check the up or down and right
             up = 0
             down = 0
-            for i in range(3):
+            for i in range(4):
                 if(recent_piece_index // 7 >= 3): # up is possible
                     if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check down
                         up = up + 1
@@ -185,20 +185,20 @@ class ConnectFourBoard:
             upperright = 0
             lowerleft = 0
             lowerright = 0
-            for i in range(3):
+            for i in range(4):
                 if(recent_piece_index // 7 >= 3): # upper diagonals
                     # now we check if there is enough room on the sides
-                    if((recent_piece_index + 3) % 7 <= 3): # check right
+                    if((recent_piece_index + 4) % 7 <= 3): # check right
                         if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 - 7]):
                             upperright = upperright + 1
-                    if((recent_piece_index - 3) % 7 <= 3): # check left
+                    if((recent_piece_index - 4) % 7 <= 3): # check left
                         if(self.positions[recent_piece_index] == self.positions[recent_piece_index - 1 - 7]):
                             upperleft = upperleft + 1
                 if(recent_piece_index // 7 <= 2): # lower diagonals
-                    if((recent_piece_index + 3) % 7 <= 3): # check right
+                    if((recent_piece_index + 4) % 7 <= 3): # check right
                         if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 + 7]):
                             lowerright = lowerright + 1
-                    if((recent_piece_index - 3) % 7 <= 3): # check left
+                    if((recent_piece_index - 4) % 7 <= 3): # check left
                         if(self.positions[recent_piece_index] == self. positions[recent_piece_index -1 + 7]):
                             lowerleft = lowerleft + 1
             if(upperleft >= 4):
