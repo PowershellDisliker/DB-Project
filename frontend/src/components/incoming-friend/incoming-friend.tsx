@@ -1,9 +1,10 @@
 import { useContext } from "react";
 import type { PostFriendRequest, User } from "../../dto/friend";
-import { AuthContext, ConfigContext } from "../../context";
+import { ConfigContext } from "../../context";
 import { postFriend } from "../../api";
 import { removeFriend } from "../../api/api";
 import globalStyles from "../../global.module.css";
+import { useCookies } from "react-cookie";
 
 
 interface RequestProps {
@@ -13,21 +14,21 @@ interface RequestProps {
 
 function IncomingFriendRequest({user, state_update}: RequestProps) {
 
-    const auth = useContext(AuthContext);
     const config = useContext(ConfigContext);
+    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
 
     const acceptHandler = async () => {
-        await postFriend(config.BACKEND_URL, auth.token!, {
-            requestor_id: auth.user_id,
+        await postFriend(config.BACKEND_URL, cookies.jwt, {
+            requestor_id: cookies.id,
             requestee_id: user.user_id,
         } as PostFriendRequest)
         state_update();
     };
 
     const rejectHandler = async () => {
-        await removeFriend(config.BACKEND_URL, auth.token!, {
-            requestor_id: auth.user_id,
-            requestee_id: auth.user_id,
+        await removeFriend(config.BACKEND_URL, cookies.jwt, {
+            requestor_id: cookies.id,
+            requestee_id: user.user_id,
         } as PostFriendRequest)
         state_update();
     }

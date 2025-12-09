@@ -1,6 +1,6 @@
 import {
     type AuthRequest, type AuthResponse,
-    type GetClosedGameResponse, type PostClosedGameRequest, type PostClosedGameResponse,
+    type PostClosedGameRequest, type PostClosedGameResponse,
     type PostFriendRequest, type PostFriendResponse,
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
@@ -10,10 +10,12 @@ import {
 import type { ClosedGame } from "../dto/closedgame";
 import type { GetFriendRequestsResponse } from "../dto/friend";
 
+// NEED TO INCLUDE backend + route FOR DEV SERVER, DEPLOYMENT ONLY NEEDS ROUTE
+
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
 
     const res = await fetch(
-        backend_url + route,
+        route,
         {
             method: "POST",
             headers: {
@@ -35,7 +37,7 @@ async function postBackend<T>(backend_url: string, route: string, request: unkno
 
 async function getBackend<T>(backend_url: string, route: string, jwt: string | null = null) {
     const res = await fetch(
-        backend_url + route,
+        route,
         {
             method: "GET",
             headers: {
@@ -120,4 +122,8 @@ export const getPublicUserFromUsername = async (backend_url: string, jwt: string
 
 export const getPrivateUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPrivateUserResponse> => {
     return getBackend<GetPrivateUserResponse>(backend_url, `/api/user/private?query_user_id=${user_id}`, jwt)
+}
+
+export const postInvalidToken = async (backend_url: string, jwt: string): Promise<boolean> => {
+    return postBackend<boolean>(backend_url, "/api/token", {"token": jwt}, jwt);
 }

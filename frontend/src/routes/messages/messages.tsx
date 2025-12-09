@@ -1,14 +1,15 @@
 import { useContext, useEffect, useState } from 'react';
 import { type GetMessageResponse, type PostMessageRequest } from '../../dto';
 import { MessageComp } from '../../components/message';
-import { AuthContext, ConfigContext } from '../../context';
+import { ConfigContext } from '../../context';
 import { getMessages } from '../../api';
 import { useSearchParams } from 'react-router-dom';
 import { postUserMessage } from '../../api';
+import { useCookies } from 'react-cookie';
 
 function Messages() {
-    const auth = useContext(AuthContext);
     const config = useContext(ConfigContext);
+    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const outbound_user_id: string | null = searchParams.get("user");
@@ -23,7 +24,7 @@ function Messages() {
     const [messageInput, setMessageInput] = useState<string>("");
 
     const compGetMessages = async () => {
-         setMessages(await getMessages(config.BACKEND_URL, auth.token!, outbound_user_id));
+         setMessages(await getMessages(config.BACKEND_URL, cookies.jwt, outbound_user_id));
     }
 
     useEffect(() => {
@@ -34,7 +35,7 @@ function Messages() {
     }, [])
 
     const sendHandler = async () => {
-        await postUserMessage(config.BACKEND_URL, auth.token!, {
+        await postUserMessage(config.BACKEND_URL, cookies.jwt, {
             recipient_id: outbound_user_id,
             message: messageInput,
         } as PostMessageRequest)

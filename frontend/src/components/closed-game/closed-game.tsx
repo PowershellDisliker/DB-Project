@@ -2,17 +2,18 @@ import type { ClosedGame } from "../../dto/closedgame";
 import StaticCanvas from "../static-canvas/static-canvas";
 import { getPublicUser } from "../../api";
 import { useEffect, useContext, useState } from 'react';
-import { AuthContext, ConfigContext } from "../../context";
+import { ConfigContext } from "../../context";
 import type { GetPublicUserResponse } from "../../dto";
 import globalStyles from '../../global.module.css';
+import { useCookies } from "react-cookie";
 
 interface ClosedGameProps {
     game: ClosedGame;
 }
 
 function ClosedGameComp({game}: ClosedGameProps) {
-    const auth = useContext(AuthContext);
     const config = useContext(ConfigContext);
+    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
 
     const [userProfile1, setUserProfile1] = useState<GetPublicUserResponse>({
         user_id: null,
@@ -28,7 +29,7 @@ function ClosedGameComp({game}: ClosedGameProps) {
 
     useEffect(() => {
         const inner = async () => {
-            const user1result = await getPublicUser(config.BACKEND_URL, auth.token!, game.user_1_id);
+            const user1result = await getPublicUser(config.BACKEND_URL, cookies.jwt, game.user_1_id);
 
             setUserProfile1({
                 user_id: user1result.user_id,
@@ -36,7 +37,7 @@ function ClosedGameComp({game}: ClosedGameProps) {
                 online: user1result.online,
             });
 
-            const user2result = await getPublicUser(config.BACKEND_URL, auth.token!, game.user_2_id);
+            const user2result = await getPublicUser(config.BACKEND_URL, cookies.jwt, game.user_2_id);
 
             setUserProfile2({
                 user_id: user2result.user_id,

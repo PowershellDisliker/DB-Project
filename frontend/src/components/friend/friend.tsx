@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import type { PostFriendRequest } from '../../dto';
-import { AuthContext, ConfigContext } from '../../context';
+import { ConfigContext } from '../../context';
 import { removeFriend } from '../../api/api';
 import type { User } from '../../dto/friend';
 import globalStyles from "../../global.module.css";
@@ -8,6 +8,7 @@ import localStyles from "./friend.module.css";
 import { useNavigate } from 'react-router-dom';
 import unfriendIconURL from '../../../public/unfriend.png';
 import messageIconURL from '../../../public/message.png';
+import { useCookies } from 'react-cookie';
 
 interface props {
     user: User
@@ -15,15 +16,15 @@ interface props {
 }
 
 function Friend({user, state_update}: props) {
+    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id'])
 
-    const auth = useContext(AuthContext);
     const config = useContext(ConfigContext);
 
     const navigator = useNavigate();
 
     const removeFriendHandler = async () => {
-        const repsonse = await removeFriend(config.BACKEND_URL, auth.token!, {
-            requestor_id: auth.user_id,
+        const repsonse = await removeFriend(config.BACKEND_URL, cookies.jwt, {
+            requestor_id: cookies.id,
             requestee_id: user.user_id
         } as PostFriendRequest)
         state_update();

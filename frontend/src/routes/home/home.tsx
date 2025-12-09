@@ -1,6 +1,6 @@
 import {useState, useEffect, useContext} from "react";
 
-import { ConfigContext, AuthContext } from "../../context";
+import { ConfigContext } from "../../context";
 import type { PostFriendRequest, PostOpenGamesResponse, OpenGame } from "../../dto";
 
 import { LoadingIcon } from '../../components/loading';
@@ -16,13 +16,14 @@ import homeStyles from "./home.module.css";
 
 import type { HomeViewModel } from "./home-vm";
 import { useNavigate } from "react-router-dom";
-import { getClosedGames, getIncomingFriendRequests, getOpenGameDetails, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend } from "../../api/api";
+import { getClosedGames, getIncomingFriendRequests, getOpenGameDetails, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend, postInvalidToken } from "../../api/api";
+import { useCookies } from "react-cookie";
 
 function Home() {
     const navigate = useNavigate();
     
     const config = useContext(ConfigContext);
-    const auth = useContext(AuthContext);
+    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
     
     const [viewModel, setViewModel] = useState<HomeViewModel>({
         friends: null,
@@ -50,20 +51,20 @@ function Home() {
 
 
     useEffect(() => {
-        if (!auth.user_id || !auth.token) return;
+        if (!cookies.id || !cookies.id) return;
 
         const fetchData = async () => {
-            const userDetails            = await getPublicUser(config.BACKEND_URL, auth.token!, auth.user_id!);
-            const openGames              = await getOpenGames(config.BACKEND_URL, auth.token!);
-            const closedGames            = await getClosedGames(config.BACKEND_URL, auth.token!);
-            const confirmedFriends       = await getFriends(config.BACKEND_URL, auth.token!);
-            const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
-            const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
+            const userDetails            = await getPublicUser(config.BACKEND_URL, cookies.jwt, cookies.id);
+            const openGames              = await getOpenGames(config.BACKEND_URL, cookies.jwt);
+            const closedGames            = await getClosedGames(config.BACKEND_URL, cookies.jwt);
+            const confirmedFriends       = await getFriends(config.BACKEND_URL, cookies.jwt);
+            const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, cookies.jwt);
+            const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, cookies.jwt);
 
             console.log(openGames);
 
             const openGameDetailsPromises = openGames.games?.map(game_id => 
-                getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id)
+                getOpenGameDetails(config.BACKEND_URL, cookies.jwt, game_id)
             ) || [];
 
             const openGameDetails: Array<OpenGame> = await Promise.all(openGameDetailsPromises);
@@ -84,12 +85,12 @@ function Home() {
         };
 
         fetchData();
-    }, [auth.user_id, viewModel.need_to_update]);
+    }, [cookies.id, viewModel.need_to_update]);
 
     const createGameHandler = async () => {
-        if (!auth.token) return;
+        if (!cookies.jwt) return;
 
-        const response: PostOpenGamesResponse = await postOpenGame(config.BACKEND_URL, auth.token);
+        const response: PostOpenGamesResponse = await postOpenGame(config.BACKEND_URL, cookies.jwt);
 
         if (!response.success) {
             setViewModel((prev) => ({
@@ -104,9 +105,14 @@ function Home() {
 
     
     const addFriendHandler = async () => {
-        const user_id_from_name = (await getPublicUserFromUsername(config.BACKEND_URL, auth.token!, viewModel.username_input)).user_id;
-        await postFriend(config.BACKEND_URL, auth.token!, {requestor_id: auth.user_id, requestee_id: user_id_from_name} as PostFriendRequest)
+        const user_id_from_name = (await getPublicUserFromUsername(config.BACKEND_URL, cookies.jwt, viewModel.username_input)).user_id;
+        await postFriend(config.BACKEND_URL, cookies.jwt, {requestor_id: cookies.id, requestee_id: user_id_from_name} as PostFriendRequest)
         updateState();
+    }
+
+    const logoutHandler = async () => {
+        const response = await postInvalidToken(config.BACKEND_URL, cookies.jwt);
+        if (response) navigate("/login");
     }
 
     return (
@@ -185,21 +191,24 @@ function Home() {
 
 
             {/* CLOSED GAMES */}
-            <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
-                <div>
-                    <h1>Player Stats</h1>
+            <div className={`${globalStyles.column} ${globalStyles.center}`}>
+                <button onClick={logoutHandler}>Logout</button>
+                <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
+                    <div>
+                        <h1>Player Stats</h1>
+                    </div>
+                    {viewModel.user_details == null && <LoadingIcon/>}
+                    <ul>
+                        {viewModel?.closed_games?.map((value) => {
+                            return (
+                                <ClosedGameComp game={value} key={value.game_id}/>
+                            )
+                        })}
+                    </ul>
                 </div>
-                {viewModel.user_details == null && <LoadingIcon/>}
-                <ul>
-                    {viewModel?.closed_games?.map((value) => {
-                        return (
-                            <ClosedGameComp game={value} key={value.game_id}/>
-                        )
-                    })}
-                </ul>
             </div>
 
-            
+
         </div>
     )
 }

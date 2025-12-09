@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useContext } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
-import { AuthContext, ConfigContext } from '../../context';
+import { ConfigContext } from '../../context';
 import { Piece } from './game-vm';
 import type { WebsocketGameRequest, WebsocketRequest, WebsocketResponse } from '../../dto';
 import gameStyles from './canvas.module.css';
+import { useCookies } from 'react-cookie';
 
 // CONSTANTS MOVE TO CONFIG?
 const marginPercentage = 0.05;
@@ -22,7 +23,7 @@ interface CanvasProps {
 function GameCanvas({game_id}: CanvasProps) {
   // Get contexts
   const config = useContext(ConfigContext);
-  const auth = useContext(AuthContext);
+  const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
     
   // State
   const [viewModel, setViewModel] = useState<SlowState>({
@@ -46,16 +47,22 @@ function GameCanvas({game_id}: CanvasProps) {
 
   // Websocket Effect
   useEffect(() => {
-    if (!game_id || !auth.token) return;
-    ws.current = new WebSocket(config!.BACKEND_WS_URL!);
+    if (!game_id || !cookies.jwt) return;
+    ws.current = new WebSocket("/api/ws");
 
     // OnOpen
     ws.current!.addEventListener('open', async () => {
       ws.current!.send(JSON.stringify({
-        jwt: auth.token,
+        jwt: cookies.jwt,
         game_id: game_id,
-        user_id: auth.user_id,
+        user_id: cookies.id,
       } as WebsocketGameRequest));
+
+      ws.current!.send(JSON.stringify({
+        command_type: "register_user",
+        user_id: cookies.id,
+        game_id: game_id
+      } as WebsocketRequest));
     });
 
     // in-loop
@@ -86,15 +93,15 @@ function GameCanvas({game_id}: CanvasProps) {
           // Visual state update
           setViewModel(() => ({
             game_running: true,
-            active_player: jsonData.next_active_player_id == auth.user_id,
+            active_player: jsonData.next_active_player_id == cookies.id,
           }));
           break;
 
         case 'board_state':
-          if (jsonData.user_1_id && !jsonData.user_2_id && jsonData.user_1_id != auth.user_id) {
+          if (jsonData.user_1_id && !jsonData.user_2_id && jsonData.user_1_id != cookies.id) {
             ws.current!.send(JSON.stringify({
               command_type: "register_user",
-              user_id: auth.user_id,
+              user_id: cookies.id,
               game_id: game_id
             } as WebsocketRequest));
           }
@@ -110,10 +117,11 @@ function GameCanvas({game_id}: CanvasProps) {
               game_running: false,
               active_player: false, 
             }))
+
           } else {
             setViewModel(() => ({
                 game_running: true,
-                active_player: jsonData.active_player == auth.user_id,
+                active_player: jsonData.active_player == cookies.id,
               }))
           }
 
@@ -261,7 +269,7 @@ function GameCanvas({game_id}: CanvasProps) {
       command_type: 'drop_piece',
       game_id: game_id,
       col: pieceCol,
-      user_id: auth.user_id,
+      user_id: cookies.id,
     } as WebsocketRequest;
     
     ws.current?.send(JSON.stringify(message));
