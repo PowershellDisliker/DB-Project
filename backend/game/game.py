@@ -46,28 +46,24 @@ class ConnectFourBoard:
         """
         # Only allow if both players are present
         if self.user_1_id is None or self.user_2_id is None:
-            print("Open user slot")
             return DropPieceResponse(
                 success=False
             )
 
         # If the player placing the piece isn't currently in the game
         if piece_owner != self.user_1_id and piece_owner != self.user_2_id:
-            print("User not registered")
             return DropPieceResponse(
                 success=False
             )
 
         # If we're outside of the bounds
         if col < 0 or col >= COL_COUNT:
-            print("out of bounds")
             return DropPieceResponse(
                 success=False
             )
 
         # If the active player isn't the piece_owner
         if self.active_player != piece_owner:
-            "Not active player"
             return DropPieceResponse(
                 success=False
             )
@@ -93,8 +89,6 @@ class ConnectFourBoard:
         # Check for winner and return
         winner = self.__check_for_winner(new_piece_index)
 
-        print(last_available_row, col)
-
         if winner is None:
             self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
             return DropPieceResponse(
@@ -102,7 +96,6 @@ class ConnectFourBoard:
                 coords=(last_available_row, col),
                 next_active_player_id=self.active_player
             )
-
         self.winner_id = winner
         return DropPieceResponse(
             success=True,
@@ -144,16 +137,70 @@ class ConnectFourBoard:
     def __check_for_winner(self, recent_piece_index: int) -> uuid.UUID | None:
         """
         returns winner's uuid if there is a winner, or None if there isn't
+
+        check the 8 piece around the last played piece then if there is one by the same user check the next two 
+        the board is held in posititons and it is just a linear list so each new row will be after 7 pieces or indieces
+        
+        the first col will be index%7 and the last col will be index%6
         """
-
         def check_col() -> uuid.UUID | None:
-            pass
-
+            # check the col or left and right
+            right = 0
+            left = 0
+            for i in range(3):
+                if((recent_piece_index + 3) % 7 <= 3): # possible on the right
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i]): # check right
+                        right = right + 1
+                if((recent_piece_index - 3) % 7 >= 3): # possible on the left
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i]): # check left
+                        left = left + 1
+            if(right == 4):
+                return self.positions[recent_piece_index]
+            if(left == 4):
+                return self.positions[recent_piece_index]
+            if(right < 4 & left < 4):
+                return None
+            
         def check_row() -> uuid.UUID | None:
-            pass
-
+            # check the up or down and right
+            up = 0
+            down = 0
+            for i in range(3):
+                if(recent_piece_index // 7 >= 3): # up is possible
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + (i * 7)]): # check down
+                        up = up + 1
+                if(recent_piece_index // 7 <= 2): # down is possible
+                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check up
+                        down = down + 1
+            if(up == 4):
+                return self.positions[recent_piece_index]
+            if(down == 4):
+                return self.positions[recent_piece_index]
+            if(up < 4 & down < 4):
+                return None
+            
         def check_dia() -> uuid.UUID | None:
-            pass
+            # check the diagonals
+            upperleft = 0
+            upperright = 0
+            lowerleft = 0
+            lowerright = 0
+            for i in range(3):
+                if(recent_piece_index // 7 >= 3): # upper diagonals
+                    # now we check if there is enough room on the sides
+                    if((recent_piece_index + 3) % 7 <= 3): # check right
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 - 7]):
+                            upperright = upperright + 1
+                    if((recent_piece_index - 3) % 7 <= 3): # check left
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index - 1 - 7]):
+                            upperleft = upperleft + 1
+                if(recent_piece_index // 7 <= 2): # lower diagonals
+                    if((recent_piece_index + 3) % 7 <= 3): # check right
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 + 7]):
+                            lowerright = lowerright + 1
+                    if((recent_piece_index - 3) % 7 <= 3): # check left
+                        if(self.positions[recent_piece_index] == self. positions[recent_piece_index -1 + 7]):
+                            lowerleft = lowerleft + 1            
 
         col_winner = check_col()
         row_winner = check_row()
