@@ -15,7 +15,7 @@ interface RequestProps {
 function IncomingFriendRequest({user, state_update}: RequestProps) {
 
     const config = useContext(ConfigContext);
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
+    const [cookies] = useCookies(['jwt', 'id']);
 
     const acceptHandler = async () => {
         await postFriend(config.BACKEND_URL, cookies.jwt, {

@@ -4,7 +4,7 @@ import { useCookies } from "react-cookie";
 
 function Base() {
     const navigator = useNavigate();
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt']);
+    const [cookies] = useCookies(['jwt']);
 
     useEffect(() => {
         cookies.jwt ? navigator("/home") : navigator("/login");

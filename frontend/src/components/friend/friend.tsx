@@ -16,14 +16,14 @@ interface props {
 }
 
 function Friend({user, state_update}: props) {
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id'])
+    const [cookies] = useCookies(['jwt', 'id'])
 
     const config = useContext(ConfigContext);
 
     const navigator = useNavigate();
 
     const removeFriendHandler = async () => {
-        const repsonse = await removeFriend(config.BACKEND_URL, cookies.jwt, {
+        await removeFriend(config.BACKEND_URL, cookies.jwt, {
             requestor_id: cookies.id,
             requestee_id: user.user_id
         } as PostFriendRequest)

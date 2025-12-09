@@ -9,9 +9,9 @@ import { useCookies } from 'react-cookie';
 
 function Messages() {
     const config = useContext(ConfigContext);
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
+    const [cookies] = useCookies(['jwt', 'id']);
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const outbound_user_id: string | null = searchParams.get("user");
 
     if (!outbound_user_id) return (

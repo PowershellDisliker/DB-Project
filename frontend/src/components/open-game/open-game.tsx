@@ -11,7 +11,7 @@ function OpenGameComp({game_id, user_1_id, user_2_id}: OpenGame) {
     const navigator = useNavigate();
 
     const config = useContext(ConfigContext);
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt']);
+    const [cookies] = useCookies(['jwt']);
 
     const [user1Username, setUser1Username] = useState<string | null>(null);
     const [user2Username, setUser2Username] = useState<string | null>(null);

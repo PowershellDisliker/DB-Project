@@ -13,7 +13,7 @@ interface ClosedGameProps {
 
 function ClosedGameComp({game}: ClosedGameProps) {
     const config = useContext(ConfigContext);
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
+    const [cookies] = useCookies(['jwt', 'id']);
 
     const [userProfile1, setUserProfile1] = useState<GetPublicUserResponse>({
         user_id: null,

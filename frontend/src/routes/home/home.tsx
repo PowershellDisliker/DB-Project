@@ -23,7 +23,7 @@ function Home() {
     const navigate = useNavigate();
     
     const config = useContext(ConfigContext);
-    const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
+    const [cookies] = useCookies(['jwt', 'id']);
     
     const [viewModel, setViewModel] = useState<HomeViewModel>({
         friends: null,

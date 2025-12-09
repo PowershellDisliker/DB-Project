@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, useContext } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type SlowState, type RealTimeState } from './game-vm';
-import { ConfigContext } from '../../context';
 import { Piece } from './game-vm';
 import type { WebsocketGameRequest, WebsocketRequest, WebsocketResponse } from '../../dto';
 import gameStyles from './canvas.module.css';
@@ -22,8 +21,7 @@ interface CanvasProps {
 
 function GameCanvas({game_id}: CanvasProps) {
   // Get contexts
-  const config = useContext(ConfigContext);
-  const [cookies, setCookies, removeCookies] = useCookies(['jwt', 'id']);
+  const [cookies] = useCookies(['jwt', 'id']);
     
   // State
   const [viewModel, setViewModel] = useState<SlowState>({

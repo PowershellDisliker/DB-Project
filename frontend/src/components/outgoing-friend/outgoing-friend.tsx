@@ -6,7 +6,7 @@ interface RequestProps {
     state_update: () => void
 }
 
-function OutgoingFriendRequest({user, state_update}: RequestProps) {
+function OutgoingFriendRequest({user}: RequestProps) {
 
 
     return (

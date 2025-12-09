@@ -4,7 +4,7 @@ import { ConfigContext } from "../../context";
 import loginStyles from "./login.module.css";
 import globalStyles from "../../global.module.css";
 import { type loginViewModel } from "./login-vm";
-import { attemptLogin, attemptRegister, postInvalidToken } from "../../api";
+import { attemptLogin, attemptRegister } from "../../api";
 import type { AuthResponse } from "../../dto";
 import { useCookies } from 'react-cookie';
 
@@ -16,7 +16,7 @@ function Login() {
     const config = useContext(ConfigContext);
 
     // Hooks into cookie state
-    const [cookies, setCookie, removeCookie] = useCookies(['jwt', 'id']);
+    const [_, setCookie] = useCookies(['jwt', 'id']);
 
     // Component State
     const [viewModel, updateViewModel] = useState<loginViewModel>({
