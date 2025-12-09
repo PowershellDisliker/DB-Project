@@ -189,17 +189,17 @@ class ConnectFourBoard:
                 if(recent_piece_index // 7 >= 3): # upper diagonals
                     # now we check if there is enough room on the sides
                     if(recent_piece_index % 7 <= 3): # check right
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i - 7]):
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i - (7 * i)]):
                             upperright = upperright + 1
                     if(recent_piece_index % 7 <= 3): # check left
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i - 7]):
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i - (7 * i)]):
                             upperleft = upperleft + 1
                 if(recent_piece_index // 7 <= 2): # lower diagonals
                     if(recent_piece_index % 7 <= 3): # check right
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i + 7]):
+                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i + (7 * i)]):
                             lowerright = lowerright + 1
                     if(recent_piece_index % 7 <= 3): # check left
-                        if(self.positions[recent_piece_index] == self. positions[recent_piece_index -i + 7]):
+                        if(self.positions[recent_piece_index] == self. positions[recent_piece_index -i + (7 *i)]):
                             lowerleft = lowerleft + 1
             if(upperleft >= 4):
                 return self.positions[recent_piece_index]
