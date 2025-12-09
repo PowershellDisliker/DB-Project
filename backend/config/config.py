@@ -18,7 +18,7 @@ class Config:
         self.POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
         self.POSTGRES_DB_NAME = os.getenv("POSTGRES_DB_NAME", "")
         self.POSTGRES_USER = os.getenv("POSTGRES_USER", "")
-        self.POSTGRES_PASS = os.getenv("POSTGRES_PASS", "")
+        self.POSTGRES_PASS = os.getenv("POSTGRES_PASSWORD", "")
         self.JWT_ALGO = os.getenv("JWT_ALGO", "")
 
         # Check for presence of required variables
