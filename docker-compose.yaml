@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_DB: ${PG_DB}
     volumes:
-      - dbproject:/var/lib/postgresql/data
+      - dbproject:/var/lib/postgresql
     networks:
       - app-network
 
