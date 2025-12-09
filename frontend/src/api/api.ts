@@ -15,7 +15,7 @@ import type { GetFriendRequestsResponse } from "../dto/friend";
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
 
     const res = await fetch(
-        route,
+        backend_url + route,
         {
             method: "POST",
             headers: {
@@ -37,7 +37,7 @@ async function postBackend<T>(backend_url: string, route: string, request: unkno
 
 async function getBackend<T>(backend_url: string, route: string, jwt: string | null = null) {
     const res = await fetch(
-        route,
+        backend_url + route,
         {
             method: "GET",
             headers: {
