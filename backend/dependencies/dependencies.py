@@ -10,7 +10,7 @@ from game import GameMultiplexer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 configuration = Config()
-database = DBClient(configuration.POSTGRES_URL, configuration.POSTGRES_DB_NAME)
+database = DBClient(f"postgresql://{configuration.POSTGRES_USER}:{configuration.POSTGRES_PASS}@{configuration.POSTGRES_HOST}", configuration.POSTGRES_DB_NAME)
 game_multiplexer = GameMultiplexer()
 
 
@@ -22,6 +22,11 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> HTTPExcept
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    token_is_blocked: bool = database.get_token(token)
+
+    if token_is_blocked:
+        return credentials_exception
 
     try:
         payload = jwt.decode(token, configuration.SECRET_KEY, algorithms=[configuration.JWT_ALGO])

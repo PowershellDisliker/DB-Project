@@ -25,7 +25,7 @@ async def broadcast(game_id: uuid.UUID, message: str):
             print(f"Error sending to client in room {game_id}: {e}")
 
 
-@router.websocket("/")
+@router.websocket("/ws")
 async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), game_multiplexer: GameMultiplexer = Depends(get_multiplexer)) -> None:
     await ws.accept()
 

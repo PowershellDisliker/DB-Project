@@ -46,24 +46,28 @@ class ConnectFourBoard:
         """
         # Only allow if both players are present
         if self.user_1_id is None or self.user_2_id is None:
+            print("Open user slot")
             return DropPieceResponse(
                 success=False
             )
 
         # If the player placing the piece isn't currently in the game
         if piece_owner != self.user_1_id and piece_owner != self.user_2_id:
+            print("User not registered")
             return DropPieceResponse(
                 success=False
             )
 
         # If we're outside of the bounds
         if col < 0 or col >= COL_COUNT:
+            print("out of bounds")
             return DropPieceResponse(
                 success=False
             )
 
         # If the active player isn't the piece_owner
         if self.active_player != piece_owner:
+            "Not active player"
             return DropPieceResponse(
                 success=False
             )
@@ -89,6 +93,8 @@ class ConnectFourBoard:
         # Check for winner and return
         winner = self.__check_for_winner(new_piece_index)
 
+        print(last_available_row, col)
+
         if winner is None:
             self.active_player = self.user_1_id if piece_owner != self.user_1_id else self.user_2_id
             return DropPieceResponse(
@@ -96,6 +102,7 @@ class ConnectFourBoard:
                 coords=(last_available_row, col),
                 next_active_player_id=self.active_player
             )
+
         self.winner_id = winner
         return DropPieceResponse(
             success=True,

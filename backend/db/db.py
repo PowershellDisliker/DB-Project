@@ -41,9 +41,8 @@ class DBClient:
         )
 
         active_tokens = Table(
-            'ActiveTokens', metadata,
-            Column('UserID', UUID(as_uuid=True), ForeignKey('Users.ID'), primary_key=True),
-            Column('Token', UUID(as_uuid=True), unique=True)
+            'BlockedTokens', metadata,
+            Column('Token', String(256), primary_key=True)
         )
 
         closed_games = Table(
@@ -178,16 +177,16 @@ class DBClient:
         )
 
 
-    def post_token(self, user_id: uuid.UUID, token: str) -> bool:
-        result = self.__run_exec("""INSERT INTO "ActiveTokens" ("Token", "UserID") VALUES (:token, :user)""", {"token": token, "user": user_id})
+    def post_token(self, token: str) -> bool:
+        result = self.__run_exec("""INSERT INTO "BlockedTokens" ("Token") VALUES (:token)""", {"token": token})
 
         if result.rowcount <= 0:
             return False
         return True
 
 
-    def get_token(self, user_id: uuid.UUID, token: str) -> bool:
-        result = self.__run_query("""SELECT * FROM "ActiveTokens" WHERE "UserID" = :id AND "Token" = :tok""", {"id": user_id, "tok": token})
+    def get_token(self, token: str) -> bool:
+        result = self.__run_query("""SELECT * FROM "BlockedTokens" WHERE "Token" = :token""", {"token": token})
 
         if not result:
             return False

@@ -26,6 +26,9 @@ class GameMultiplexer:
 
 
     def __get_drop_piece_response(self, game_response: DropPieceResponse) -> WebsocketOutgoingCommand:
+        if game_response.success == False:
+            return self.__get_error_response("Failure")
+
         if game_response.coords is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
         
