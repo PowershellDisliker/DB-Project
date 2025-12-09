@@ -35,7 +35,7 @@ class Config:
             self.JWT_ALGO
         ]
 
-        for value in required:
+        for i ,value in enumerate(required):
             if value == "":
-                raise ValueError("Missing required environment variables")
+                raise ValueError(f"Missing required environment variable {i}")
 
