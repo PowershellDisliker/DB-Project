@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_DB: ${PG_DB}
     volumes:
-      - db_project:/var/lib/postgresql/data
+      - dbproject:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -43,5 +43,5 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  dbproject:
     driver: local

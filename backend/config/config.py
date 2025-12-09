@@ -11,7 +11,7 @@ class Config:
 
     def __init__(self) -> None:
         # Load the file
-        load_dotenv()
+        # load_dotenv()
 
         # Extract Variables
         self.SECRET_KEY = os.getenv("SECRET_KEY", "")
