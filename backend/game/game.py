@@ -136,94 +136,45 @@ class ConnectFourBoard:
 
     def __check_for_winner(self, recent_piece_index: int) -> uuid.UUID | None:
         """
-        returns winner's uuid if there is a winner, or None if there isn't
-
-        check the 8 piece around the last played piece then if there is one by the same user check the next two 
-        the board is held in posititons and it is just a linear list so each new row will be after 7 pieces or indieces
-        
-        the first col will be index%7 and the last col will be index%6
+        Returns the winner's UUID if there is a winner, or None if there isn't.
+        Uses the last played piece to check all 8 directions for 4 in a row.
         """
-        def check_col() -> uuid.UUID | None:
-            # check the col or left and right
-            right = 0
-            left = 0
-            for i in range(4):
-                if(recent_piece_index % 7 <= 3): # possible on the right
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + i]): # check right
-                        right = right + 1
-                if(recent_piece_index % 7 >= 3): # possible on the left
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i]): # check left
-                        left = left + 1
-            if(right >= 4):
-                return self.positions[recent_piece_index]
-            if(left >= 4):
-                return self.positions[recent_piece_index]
-            if(right < 4 & left < 4):
-                return None
-            
-        def check_row() -> uuid.UUID | None:
-            # check the up or down and right
-            up = 0
-            down = 0
-            for i in range(4):
-                if(recent_piece_index // 7 >= 3): # up is possible
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check down
-                        up = up + 1
-                if(recent_piece_index // 7 <= 2): # down is possible
-                    if(self.positions[recent_piece_index] == self.positions[recent_piece_index + (i * 7)]): # check up
-                        down = down + 1
-            if(up >= 4):
-                return self.positions[recent_piece_index]
-            if(down >= 4):
-                return self.positions[recent_piece_index]
-            if(up < 4 & down < 4):
-                return None
-            
-        def check_dia() -> uuid.UUID | None:
-            # check the diagonals
-            upperleft = 0
-            upperright = 0
-            lowerleft = 0
-            lowerright = 0
-            for i in range(4):
-                if(recent_piece_index // 7 >= 3): # upper diagonals
-                    # now we check if there is enough room on the sides
-                    if(recent_piece_index % 7 <= 3): # check right
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 - 7]):
-                            upperright = upperright + 1
-                    if(recent_piece_index % 7 <= 3): # check left
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index - 1 - 7]):
-                            upperleft = upperleft + 1
-                if(recent_piece_index // 7 <= 2): # lower diagonals
-                    if(recent_piece_index % 7 <= 3): # check right
-                        if(self.positions[recent_piece_index] == self.positions[recent_piece_index + 1 + 7]):
-                            lowerright = lowerright + 1
-                    if(recent_piece_index % 7 <= 3): # check left
-                        if(self.positions[recent_piece_index] == self. positions[recent_piece_index -1 + 7]):
-                            lowerleft = lowerleft + 1
-            if(upperleft >= 4):
-                return self.positions[recent_piece_index]
-            if(upperright >= 4):
-                return self.positions[recent_piece_index]
-            if(lowerleft >= 4):
-                return self.positions[recent_piece_index]
-            if(upperright >= 4):
-                return self.positions[recent_piece_index]
+    
+        player = self.positions[recent_piece_index]
+        if player is None:
             return None
-                            
-
-        col_winner = check_col()
-        row_winner = check_row()
-        dia_winner = check_dia()
-
-        if col_winner:
-            return col_winner
-
-        if row_winner:
-            return row_winner
-        
-        if dia_winner:
-            return dia_winner
+    
+        row = recent_piece_index // COL_COUNT
+        col = recent_piece_index % COL_COUNT
+    
+        # Directions: (delta_row, delta_col)
+        directions = [
+            (0, 1),   # horizontal right
+            (1, 0),   # vertical down
+            (1, 1),   # diagonal down-right
+            (1, -1),  # diagonal down-left
+        ]
+    
+        for dr, dc in directions:
+            count = 1  # Count the current piece
+    
+            # Check in the positive direction
+            r, c = row + dr, col + dc
+            while 0 <= r < ROW_COUNT and 0 <= c < COL_COUNT and self.positions[r * COL_COUNT + c] == player:
+                count += 1
+                r += dr
+                c += dc
+    
+            # Check in the negative direction
+            r, c = row - dr, col - dc
+            while 0 <= r < ROW_COUNT and 0 <= c < COL_COUNT and self.positions[r * COL_COUNT + c] == player:
+                count += 1
+                r -= dr
+                c -= dc
+    
+            if count >= 4:
+                return player
+    
         return None
 
 
