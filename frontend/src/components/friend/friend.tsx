@@ -6,6 +6,8 @@ import type { User } from '../../dto/friend';
 import globalStyles from "../../global.module.css";
 import localStyles from "./friend.module.css";
 import { useNavigate } from 'react-router-dom';
+import unfriendIconURL from '../../../public/unfriend.png';
+import messageIconURL from '../../../public/message.png';
 
 interface props {
     user: User
@@ -33,11 +35,14 @@ function Friend({user, state_update}: props) {
 
     return (
         <div className={`${globalStyles.row} ${globalStyles.center} ${globalStyles.roundedContainer} ${localStyles.gap} ${localStyles.margin}`}>
-            <p className={localStyles.bold}>{user.username}</p>
-            <p>{user.online ? "online" : "offline"}</p>
+            <p className={`${localStyles.username}`}>{user.username}</p>
 
-            <button onClick={removeFriendHandler}>Remove Friend</button>
-            <button onClick={startMessageHandler}>Send Message</button>
+            <button onClick={removeFriendHandler} className={localStyles.button}>
+                <img src={unfriendIconURL} className={localStyles.icon} />
+            </button>
+            <button onClick={startMessageHandler} className={localStyles.button}>
+                <img src={messageIconURL} className={localStyles.icon} />
+            </button>
         </div>
     )
 }

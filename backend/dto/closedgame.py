@@ -12,6 +12,3 @@ class ClosedGame(BaseModel):
     start_time: datetime
     end_time: datetime
     pieces: list[uuid.UUID | None]
-
-class GetClosedGameResponse(BaseModel):
-    games: list[ClosedGame] | None

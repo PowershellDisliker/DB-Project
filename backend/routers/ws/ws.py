@@ -75,15 +75,16 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
                 await broadcast(initial_request.game_id, board_state_response.model_dump_json())
             
             # If there was a winner, post the game to the backend.
-            if response.command_type == "drop_piece_response" and response.winner_id is not None and command.game_id and response.board_state:
+            if response.command_type == "drop_piece_response" and response.winner_id is not None and response.board_state:
                 db = get_db()
-                game_to_close = game_multiplexer.get_open_game_detail(command.game_id)
+                game_to_close = game_multiplexer.get_open_game_detail(initial_request.game_id)
 
                 if game_to_close.user_1_id is None or game_to_close.user_2_id is None or game_to_close.start_time is None:
                     await broadcast(initial_request.game_id, "Cannot post game to ClosedGames")
                     continue
 
                 db.post_closed_game(initial_request.game_id, game_to_close.user_1_id, game_to_close.user_2_id, game_to_close.start_time, response.winner_id, response.board_state)
+                game_multiplexer.remove(initial_request.game_id)
 
     except WebSocketDisconnect:
         pass

@@ -177,3 +177,9 @@ class GameMultiplexer:
             user_2_id=game.user_2_id,
             start_time=game.start_time
         )
+
+    def remove(self, game_id: uuid.UUID):
+        """
+        Removes game from internal memory
+        """
+        self.games.pop(game_id)

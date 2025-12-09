@@ -7,10 +7,6 @@ export interface ClosedGame {
     pieces: Array<string | null>;
 }
 
-export interface GetClosedGameResponse {
-    games: Array<ClosedGame>
-}
-
 export interface PostClosedGameRequest {
     game_id: string,
     winner: string

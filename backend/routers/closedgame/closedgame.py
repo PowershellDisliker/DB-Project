@@ -1,24 +1,21 @@
 from fastapi import APIRouter, Depends
 from db import DBClient
 from dependencies import get_db, get_current_user_id
-from dto import GetClosedGameResponse, ClosedGame
+from dto import ClosedGame
 
 router = APIRouter(
     dependencies=[Depends(get_current_user_id)]
 )
 
 @router.get("/closedgames")
-async def get_closed_games(requestor_id = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> GetClosedGameResponse:
+async def get_closed_games(requestor_id = Depends(get_current_user_id), db: DBClient = Depends(get_db)) -> list[ClosedGame]:
     data = db.get_closed_games(requestor_id)
 
     if data is None:
-        return GetClosedGameResponse(
-            games=None
-        )
+        return []
     
     # UGLY
-    return GetClosedGameResponse(
-        games=[ClosedGame(
+    return [ClosedGame(
             game_id=row.game_id,
             user_1_id=row.user_1_id,
             user_2_id=row.user_2_id,
@@ -35,4 +32,3 @@ async def get_closed_games(requestor_id = Depends(get_current_user_id), db: DBCl
                            row.end_time is not None and
                            row.start_time is not None and
                            row.pieces is not None]
-    )

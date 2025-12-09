@@ -43,7 +43,7 @@ function Messages() {
     return (
         <div>
             <ul>
-                {messages?.messages.map((value) => 
+                {messages?.messages?.map((value) => 
                     <MessageComp sender_id={value.sender_id} recipient_id={value.recipient_id} time_stamp={value.time_stamp} message={value.message} message_id={value.message_id} key={value.message_id}/>
                 )}
             </ul>

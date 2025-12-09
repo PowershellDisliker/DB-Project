@@ -8,7 +8,7 @@ import { Friend } from '../../components/friend';
 import OutgoingFriendRequest from "../../components/outgoing-friend/outgoing-friend";
 import IncomingFriendRequest from "../../components/incoming-friend/incoming-friend";
 import { OpenGameComp } from "../../components/open-game";
-import { PreviousGame } from "../../components/previous-game";
+import { ClosedGameComp } from "../../components/closed-game";
 import { getPublicUser, getOpenGames, getFriends, postOpenGame } from "../../api";
 
 import globalStyles from "../../global.module.css";
@@ -16,7 +16,7 @@ import homeStyles from "./home.module.css";
 
 import type { HomeViewModel } from "./home-vm";
 import { useNavigate } from "react-router-dom";
-import { getIncomingFriendRequests, getOpenGameDetails, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend } from "../../api/api";
+import { getClosedGames, getIncomingFriendRequests, getOpenGameDetails, getOutgoingFriendRequests, getPublicUserFromUsername, postFriend } from "../../api/api";
 
 function Home() {
     const navigate = useNavigate();
@@ -55,27 +55,30 @@ function Home() {
         const fetchData = async () => {
             const userDetails            = await getPublicUser(config.BACKEND_URL, auth.token!, auth.user_id!);
             const openGames              = await getOpenGames(config.BACKEND_URL, auth.token!);
+            const closedGames            = await getClosedGames(config.BACKEND_URL, auth.token!);
             const confirmedFriends       = await getFriends(config.BACKEND_URL, auth.token!);
             const outGoingFriendRequests = await getOutgoingFriendRequests(config.BACKEND_URL, auth.token!);
             const incomingFriendRequests = await getIncomingFriendRequests(config.BACKEND_URL, auth.token!);
 
             console.log(openGames);
 
-            const gameDetailsPromises = openGames.games?.map(game_id => 
+            const openGameDetailsPromises = openGames.games?.map(game_id => 
                 getOpenGameDetails(config.BACKEND_URL, auth.token!, game_id)
             ) || [];
 
-            const openGameDetails: Array<OpenGame> = await Promise.all(gameDetailsPromises);
+            const openGameDetails: Array<OpenGame> = await Promise.all(openGameDetailsPromises);
 
             console.log(openGameDetails);
 
             setViewModel(prev => ({
                 ...prev,
-                user_details: userDetails,
-                open_games: openGameDetails,
-                friends: confirmedFriends.users,
-                outgoing_friend_requests: outGoingFriendRequests.users,
-                incoming_friend_requests: incomingFriendRequests.users,
+
+                user_details: userDetails ?? {},
+                open_games: openGameDetails ?? [],
+                closed_games: closedGames ?? [],
+                friends: confirmedFriends.users ?? [],
+                outgoing_friend_requests: outGoingFriendRequests.users ?? [],
+                incoming_friend_requests: incomingFriendRequests.users ?? [],
                 need_to_update: false,
             }));
         };
@@ -109,6 +112,8 @@ function Home() {
     return (
         <div className={`${globalStyles.row} ${globalStyles.globalCenter} ${homeStyles.mainContainer}`}>
             
+
+            {/* FRIENDS */}
             <div className={`${globalStyles.roundedContainer} ${globalStyles.column} ${globalStyles.center} ${homeStyles.loginColumn}`}>
                 <h1>Friends List</h1>
                 <div className={`${globalStyles.column} ${globalStyles.spaceBetween} ${homeStyles.loginColumn}`}>
@@ -178,6 +183,7 @@ function Home() {
                 <button onClick={createGameHandler}>Create Game</button>
             </div>
 
+
             {/* CLOSED GAMES */}
             <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
                 <div>
@@ -185,13 +191,15 @@ function Home() {
                 </div>
                 {viewModel.user_details == null && <LoadingIcon/>}
                 <ul>
-                    {viewModel?.closed_games?.games?.map((value) => {
+                    {viewModel?.closed_games?.map((value) => {
                         return (
-                            <PreviousGame id={value.game_id} key={value.game_id}/>
+                            <ClosedGameComp game={value} key={value.game_id}/>
                         )
                     })}
                 </ul>
             </div>
+
+            
         </div>
     )
 }

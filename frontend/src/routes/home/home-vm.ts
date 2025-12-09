@@ -1,10 +1,11 @@
-import type { GetClosedGameResponse, OpenGame, GetPublicUserResponse } from "../../dto";
+import type { OpenGame, GetPublicUserResponse } from "../../dto";
+import type { ClosedGame } from "../../dto/closedgame";
 import type { User } from "../../dto/friend";
 
 export type HomeViewModel = {
     user_details: GetPublicUserResponse | null;
-    closed_games: GetClosedGameResponse | null;
     open_games: Array<OpenGame> | null;
+    closed_games: Array<ClosedGame> | null;
     friends: Array<User> | null;
     outgoing_friend_requests: Array<User> | null;
     incoming_friend_requests: Array<User> | null;

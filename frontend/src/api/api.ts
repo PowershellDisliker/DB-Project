@@ -7,6 +7,7 @@ import {
     type GetPublicUserResponse, type GetPrivateUserResponse,
     type OpenGame
 } from "../dto";
+import type { ClosedGame } from "../dto/closedgame";
 import type { GetFriendRequestsResponse } from "../dto/friend";
 
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
@@ -61,8 +62,8 @@ export const attemptRegister = async (backend_url: string, username: string, pas
     return postBackend<AuthResponse>(backend_url, "/api/register", {username: username, password: password} as AuthRequest);
 }
 
-export const getClosedGames = async (backend_url: string, jwt: string): Promise<GetClosedGameResponse> => {
-    return getBackend<GetClosedGameResponse>(backend_url, "/api/closedgames", jwt);
+export const getClosedGames = async (backend_url: string, jwt: string): Promise<Array<ClosedGame>> => {
+    return getBackend<Array<ClosedGame>>(backend_url, "/api/closedgames", jwt);
 }
 
 export const postClosedGame = async (backend_url: string, jwt: string, request: PostClosedGameRequest): Promise<PostClosedGameResponse> => {
