@@ -1,0 +1,26 @@
+p {
+    margin-block: 4px;
+    margin-inline: 6px;
+}
+
+.gap {
+    gap: 5px;
+}
+
+.username {
+    font-weight: bold;
+    min-width: 150px;
+}
+
+.margin {
+    margin: 2px;
+}
+
+.icon {
+    width: 30px;
+}
+
+.button {
+    max-width: 40px;
+    margin: 2px;
+}

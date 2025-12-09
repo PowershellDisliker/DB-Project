@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import uuid
+from datetime import datetime
 
 # /api/opengames
 # GET
@@ -7,16 +8,14 @@ class OpenGame(BaseModel):
     game_id: uuid.UUID
     user_1_id: uuid.UUID | None
     user_2_id: uuid.UUID | None
-    can_join: bool
+    start_time: datetime | None
 
 class GetOpenGamesResponse(BaseModel):
-    games: list[OpenGame] | None = None
+    games: list[uuid.UUID] | None = None
 
-class OpenGameProps(BaseModel):
-    game: OpenGame
+class PostOpenGameRequest(BaseModel):
+    user_id: uuid.UUID
 
-# POST
-class PostOpenGamesResponse(BaseModel):
+class PostOpenGameResponse(BaseModel):
     success: bool
     game_id: uuid.UUID | None = None
-

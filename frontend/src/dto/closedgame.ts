@@ -3,11 +3,8 @@ export interface ClosedGame {
     user_1_id: string,
     user_2_id: string,
     winner: string,
-    duration: string
-}
-
-export interface GetClosedGameResponse {
-    games: Array<ClosedGame>
+    duration: string,
+    pieces: Array<string | null>;
 }
 
 export interface PostClosedGameRequest {

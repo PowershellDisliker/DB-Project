@@ -1,12 +1,11 @@
 from pydantic import BaseModel
-from typing import Tuple
 from dto import DB_User
 import uuid
 
 # /api/friends
 # GET
 class GetFriendResponse(BaseModel):
-    friend_ids: list[uuid.UUID] | None
+    users: list[DB_User] | None = None
 
 class GetFriendRequestsResponse(BaseModel):
     users: list[DB_User] | None = None

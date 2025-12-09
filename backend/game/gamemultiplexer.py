@@ -1,9 +1,6 @@
-from fastapi import WebSocket
 from .game import ConnectFourBoard
-from typing import Tuple
-from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse
+from dto import WebsocketIncomingCommand, WebsocketOutgoingCommand, WebsocketGameRequest, BoardState, DropPieceResponse, OpenGame, PostOpenGameResponse
 import uuid
-
 
 class GameMultiplexer:
     games: dict[uuid.UUID, ConnectFourBoard] = {}
@@ -29,6 +26,9 @@ class GameMultiplexer:
 
 
     def __get_drop_piece_response(self, game_response: DropPieceResponse) -> WebsocketOutgoingCommand:
+        if game_response.success == False:
+            return self.__get_error_response("Failure")
+
         if game_response.coords is None:
             return self.__get_error_response("No position included in drop_piece_response from server")
         
@@ -49,13 +49,34 @@ class GameMultiplexer:
         )
 
 
-    def create_or_load(self, request: WebsocketGameRequest, user_id: uuid.UUID) -> WebsocketOutgoingCommand:
+    def create_game(self, user_id: uuid.UUID) -> PostOpenGameResponse:
+        """
+        DESCRIPTION:
+            Creates the game in the multiplexer object and returns the new game_id
+        """
+        new_game_id = uuid.uuid4()
+
+        # In the nearly impossible event that we generate an already used uuid.
+        while new_game_id in self.games.keys():
+            new_game_id = uuid.uuid4()
+
+        self.games[new_game_id] = ConnectFourBoard(user_id)
+
+        return PostOpenGameResponse(
+            success=True,
+            game_id=new_game_id
+        )
+
+
+    def load_game(self, request: WebsocketGameRequest) -> WebsocketOutgoingCommand:
+        """
+        DESCRIPTION:
+            Retrieves the board state of any active game
+        """
         game = self.games.get(request.game_id)
 
         if game is None:
-            new_game = ConnectFourBoard(user_id)
-            self.games[request.game_id] = new_game
-            game = new_game
+            return self.__get_error_response(f"No game with id: {request.game_id}")
 
         return self._get_board_state_response(request.game_id)
 
@@ -135,3 +156,33 @@ class GameMultiplexer:
             case _:
                 return self.__get_error_response("malformed websocket request")
 
+
+    def get_open_game_ids(self) -> list[uuid.UUID]:
+        result = list(self.games.keys())
+        print(result)
+        return result
+
+
+    def get_open_game_detail(self, game_id: uuid.UUID) -> OpenGame:
+        game = self.games.get(game_id)
+
+        if game is None:
+            return OpenGame(
+                game_id=game_id,
+                user_1_id=None,
+                user_2_id=None,
+                start_time=None
+            )
+        
+        return OpenGame(
+            game_id=game_id,
+            user_1_id=game.user_1_id,
+            user_2_id=game.user_2_id,
+            start_time=game.start_time
+        )
+
+    def remove(self, game_id: uuid.UUID):
+        """
+        Removes game from internal memory
+        """
+        self.games.pop(game_id)

@@ -1,7 +1,8 @@
-import { ConfigContext, type Config, AuthContext} from "./context";
+import { ConfigContext, type Config} from "./context";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useMemo, useState } from "react";
-import { Login, Home, Game, Base } from "./routes";
+import { useMemo } from "react";
+import { Login, Home, Game, Base, Messages } from "./routes";
+import { CookiesProvider } from 'react-cookie';
 
 function App() {
 
@@ -11,22 +12,20 @@ function App() {
     BACKEND_WS_URL: import.meta.env.VITE_BACKEND_WS_URL,
   }), [])
 
-  const [token, setToken] = useState<string | null>(null);
-  const [user_id, setUserId] = useState<string | null>(null);
-
   return (
-    <ConfigContext.Provider value={configuration}>
-      <AuthContext.Provider value={{token, setToken, user_id, setUserId}}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Base/>}/>
-            <Route path="/home" element={<Home/>}/>
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/game" element={<Game />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthContext.Provider>
-    </ConfigContext.Provider>
+    <CookiesProvider>
+      <ConfigContext.Provider value={configuration}>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Base/>}/>
+              <Route path="/home" element={<Home/>}/>
+              <Route path="/login" element={<Login/>}/>
+              <Route path="/game" element={<Game />} />
+              <Route path="/messages" element={<Messages />} />
+            </Routes>
+          </BrowserRouter>
+      </ConfigContext.Provider>
+    </CookiesProvider>
   )
 }
 

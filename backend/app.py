@@ -32,4 +32,4 @@ app.include_router(opengame_router, prefix="/api")
 app.include_router(user_router, prefix="/api")
 
 # Websocket Route
-app.include_router(ws_router, prefix="/ws")
+app.include_router(ws_router, prefix="/api")

@@ -1,16 +1,11 @@
 export interface OpenGame {
     game_id: string,
     user_1_id: string,
-    user_2_id: string,
-    can_join: boolean
-}
-
-export interface OpenGameProps {
-    game: OpenGame
+    user_2_id: string | null
 }
 
 export interface GetOpenGamesResponse {
-    games: Array<OpenGame>
+    games: Array<string> | null
 }
 
 export interface PostOpenGamesResponse {

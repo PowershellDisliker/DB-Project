@@ -1,18 +1,22 @@
 import React, { useState, useContext } from "react";
 import {useNavigate} from "react-router-dom";
-import { ConfigContext, AuthContext } from "../../context";
+import { ConfigContext } from "../../context";
 import loginStyles from "./login.module.css";
 import globalStyles from "../../global.module.css";
 import { type loginViewModel } from "./login-vm";
 import { attemptLogin, attemptRegister } from "../../api";
 import type { AuthResponse } from "../../dto";
+import { useCookies } from 'react-cookie';
 
 function Login() {
     // Used for SPA re-routing
     const navigate = useNavigate();
 
+    // grab configuration
     const config = useContext(ConfigContext);
-    const {setToken, setUserId} = useContext(AuthContext);
+
+    // Hooks into cookie state
+    const [_, setCookie] = useCookies(['jwt', 'id']);
 
     // Component State
     const [viewModel, updateViewModel] = useState<loginViewModel>({
@@ -42,8 +46,8 @@ function Login() {
         const response: AuthResponse = await attemptLogin(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "");
 
         if (response.success) {
-            setToken(response.token);
-            setUserId(response.user_id);
+            setCookie('jwt', response.token ?? "");
+            setCookie('id', response.user_id ?? "");
             navigate("/home");
         } else {
             updateViewModel(prev => ({
@@ -57,8 +61,8 @@ function Login() {
         const response: AuthResponse = await attemptRegister(config.BACKEND_URL, viewModel.username ?? "", viewModel.password ?? "");
 
         if (response.success) {
-            setToken(response.token);
-            setUserId(response.user_id);
+            setCookie('jwt', response.token ?? "");
+            setCookie('id', response.user_id ?? "");
             navigate("/home");
         } else {
             updateViewModel(prev => ({
@@ -69,7 +73,7 @@ function Login() {
     };
 
     return (
-        <div>
+        <div className={`${globalStyles.globalCenter} ${globalStyles.column}`}>
             <div className={`${globalStyles.globalCenter} ${globalStyles.column}`}>
                 <div className={`${globalStyles.roundedContainer} ${globalStyles.column} ${globalStyles.spaceBetween} ${loginStyles.mainContainer}`}>
                     <div className={`${globalStyles.spaceBetween} ${loginStyles.inputElement}`}>

@@ -3,6 +3,11 @@ html, body, #root {
     margin: 0;
 }
 
+ul {
+    list-style-type: none;
+    padding-inline-start: 0px;
+}
+
 :root {
     --foreground-color: #333333;
     --background-color: #cecccc;
@@ -24,6 +29,7 @@ body {
 button {
     transition: background-color 0.1s ease-in-out;
     background-color: var(--muted-blue);
+    border-radius: 20%;
 }
 
 button:hover {
@@ -38,10 +44,12 @@ button:hover {
 
 .center {
     display: flex;
-    height: 100%;
-    flex-grow: 1;
     justify-content: center;
     align-items: center;
+}
+
+.height {
+    height: 100%;
 }
 
 .globalCenter {
@@ -65,4 +73,16 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.margin {
+    margin: 5px;
+}
+
+.centerText {
+    text-align: center;
+}
+
+.scroll {
+    overflow-y: scroll;
 }

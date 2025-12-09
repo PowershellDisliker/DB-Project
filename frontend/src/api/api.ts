@@ -1,18 +1,21 @@
 import {
     type AuthRequest, type AuthResponse,
-    type GetClosedGameResponse, type PostClosedGameRequest, type PostClosedGameResponse,
-    type GetFriendResponse, type PostFriendRequest, type PostFriendResponse,
+    type PostClosedGameRequest, type PostClosedGameResponse,
+    type PostFriendRequest, type PostFriendResponse,
     type GetMessageResponse, type PostMessageRequest, type PostMessageResponse,
     type GetOpenGamesResponse, type PostOpenGamesResponse,
     type GetPublicUserResponse, type GetPrivateUserResponse,
-    type OpenGameProps
+    type OpenGame
 } from "../dto";
+import type { ClosedGame } from "../dto/closedgame";
 import type { GetFriendRequestsResponse } from "../dto/friend";
+
+// NEED TO INCLUDE backend + route FOR DEV SERVER, DEPLOYMENT ONLY NEEDS ROUTE
 
 async function postBackend<T>(backend_url: string, route: string, request: unknown, jwt: string | null = null) {
 
     const res = await fetch(
-        backend_url + route,
+        route,
         {
             method: "POST",
             headers: {
@@ -34,7 +37,7 @@ async function postBackend<T>(backend_url: string, route: string, request: unkno
 
 async function getBackend<T>(backend_url: string, route: string, jwt: string | null = null) {
     const res = await fetch(
-        backend_url + route,
+        route,
         {
             method: "GET",
             headers: {
@@ -61,35 +64,39 @@ export const attemptRegister = async (backend_url: string, username: string, pas
     return postBackend<AuthResponse>(backend_url, "/api/register", {username: username, password: password} as AuthRequest);
 }
 
-export const getClosedGames = async (backend_url: string, jwt: string): Promise<GetClosedGameResponse> => {
-    return getBackend<GetClosedGameResponse>(backend_url, "/api/closedgames", jwt);
+export const getClosedGames = async (backend_url: string, jwt: string): Promise<Array<ClosedGame>> => {
+    return getBackend<Array<ClosedGame>>(backend_url, "/api/closedgames", jwt);
 }
 
 export const postClosedGame = async (backend_url: string, jwt: string, request: PostClosedGameRequest): Promise<PostClosedGameResponse> => {
     return postBackend<PostClosedGameResponse>(backend_url, "/api/closedgames", request, jwt);
 }
 
-export const getFriends = async (backend_url: string, jwt: string): Promise<GetFriendResponse> => {
-    return getBackend(backend_url, "/api/friends", jwt);
+export const getFriends = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends", jwt);
 }
 
 export const getIncomingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
-    return getBackend(backend_url, "/api/friends/incoming", jwt);
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends/incoming", jwt);
 }
 
 export const getOutgoingFriendRequests = async (backend_url: string, jwt: string): Promise<GetFriendRequestsResponse> => {
-    return getBackend(backend_url, "/api/friends/outgoing", jwt);
+    return getBackend<GetFriendRequestsResponse>(backend_url, "/api/friends/outgoing", jwt);
 }
 
 export const postFriend = async (backend_url: string, jwt: string, request: PostFriendRequest): Promise<PostFriendResponse> => {
     return postBackend(backend_url, "/api/friends", request, jwt)
 }
 
-export const getMessages = async (backend_url: string, jwt: string): Promise<GetMessageResponse> => {
-    return getBackend(backend_url, "/api/messages", jwt)
+export const removeFriend = async (backend_url: string, jwt: string, request: PostFriendRequest): Promise<PostFriendResponse> => {
+    return postBackend(backend_url, "/api/friends/reject", request, jwt);
 }
 
-export const postMessage = async (backend_url: string, jwt: string, request: PostMessageRequest): Promise<PostMessageResponse> => {
+export const getMessages = async (backend_url: string, jwt: string, user_id: string): Promise<GetMessageResponse> => {
+    return getBackend(backend_url, `/api/messages?user=${user_id}`, jwt)
+}
+
+export const postUserMessage = async (backend_url: string, jwt: string, request: PostMessageRequest): Promise<PostMessageResponse> => {
     return postBackend(backend_url, "/api/messages", request, jwt)
 }
 
@@ -97,8 +104,8 @@ export const getOpenGames = async (backend_url: string, jwt: string): Promise<Ge
     return getBackend<GetOpenGamesResponse>(backend_url, "/api/opengames", jwt);
 }
 
-export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGameProps> => {
-    return getBackend<OpenGameProps>(backend_url, `/api/opengamedetails?game_id=${game_id}`, jwt);
+export const getOpenGameDetails = async (backend_url: string, jwt: string, game_id: string): Promise<OpenGame> => {
+    return getBackend<OpenGame>(backend_url, `/api/opengames/detail?game_id=${game_id}`, jwt);
 }
 
 export const postOpenGame = async (backend_url: string, jwt: string): Promise<PostOpenGamesResponse> => {
@@ -115,4 +122,8 @@ export const getPublicUserFromUsername = async (backend_url: string, jwt: string
 
 export const getPrivateUser = async (backend_url: string, jwt: string, user_id: string): Promise<GetPrivateUserResponse> => {
     return getBackend<GetPrivateUserResponse>(backend_url, `/api/user/private?query_user_id=${user_id}`, jwt)
+}
+
+export const postInvalidToken = async (backend_url: string, jwt: string): Promise<boolean> => {
+    return postBackend<boolean>(backend_url, "/api/token", {"token": jwt}, jwt);
 }

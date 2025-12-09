@@ -1,13 +1,13 @@
-import React, {useContext, useEffect} from "react";
+import {useEffect} from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context";
+import { useCookies } from "react-cookie";
 
 function Base() {
     const navigator = useNavigate();
-    const auth = useContext(AuthContext);
+    const [cookies] = useCookies(['jwt']);
 
     useEffect(() => {
-        auth.token ? navigator("/home") : navigator("/login");
+        cookies.jwt ? navigator("/home") : navigator("/login");
     }, [])
 
     return (

@@ -11,3 +11,6 @@ class AuthResponse(BaseModel):
     success: bool
     token: str | None = None
     user_id: uuid.UUID | None = None
+
+class TokenRequest(BaseModel):
+    token: str
