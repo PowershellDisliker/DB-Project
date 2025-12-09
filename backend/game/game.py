@@ -1,5 +1,4 @@
 from typing import Tuple
-from datetime import datetime
 from dto import BoardState, DropPieceResponse
 import uuid
 
@@ -15,8 +14,6 @@ class ConnectFourBoard:
 
         self.active_player: uuid.UUID = user_1_id
         self.winner_id: uuid.UUID | None = None
-
-        self.start_time = datetime.now()
 
         self.positions: list[uuid.UUID | None] = [None for _ in range(COL_COUNT * ROW_COUNT)]
 
@@ -154,9 +151,9 @@ class ConnectFourBoard:
                 if((recent_piece_index - 3) % 7 >= 3): # possible on the left
                     if(self.positions[recent_piece_index] == self.positions[recent_piece_index - i]): # check left
                         left = left + 1
-            if(right == 4):
+            if(right >= 4):
                 return self.positions[recent_piece_index]
-            if(left == 4):
+            if(left >= 4):
                 return self.positions[recent_piece_index]
             if(right < 4 & left < 4):
                 return None
@@ -172,9 +169,9 @@ class ConnectFourBoard:
                 if(recent_piece_index // 7 <= 2): # down is possible
                     if(self.positions[recent_piece_index] == self.positions[recent_piece_index - (i * 7)]): # check up
                         down = down + 1
-            if(up == 4):
+            if(up >= 4):
                 return self.positions[recent_piece_index]
-            if(down == 4):
+            if(down >= 4):
                 return self.positions[recent_piece_index]
             if(up < 4 & down < 4):
                 return None
@@ -200,7 +197,17 @@ class ConnectFourBoard:
                             lowerright = lowerright + 1
                     if((recent_piece_index - 3) % 7 <= 3): # check left
                         if(self.positions[recent_piece_index] == self. positions[recent_piece_index -1 + 7]):
-                            lowerleft = lowerleft + 1            
+                            lowerleft = lowerleft + 1
+            if(upperleft >= 4):
+                return self.positions[recent_piece_index]
+            if(upperright >= 4):
+                return self.positions[recent_piece_index]
+            if(lowerleft >= 4):
+                return self.positions[recent_piece_index]
+            if(upperright >= 4):
+                return self.positions[recent_piece_index]
+            return None
+                            
 
         col_winner = check_col()
         row_winner = check_row()
