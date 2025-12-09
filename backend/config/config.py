@@ -36,6 +36,8 @@ class Config:
         ]
 
         for i ,value in enumerate(required):
+            print(i, value)
+            
             if value == "":
                 raise ValueError(f"Missing required environment variable {i}")
 
