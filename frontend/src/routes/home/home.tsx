@@ -191,12 +191,12 @@ function Home() {
 
 
             {/* CLOSED GAMES */}
-            <div className={`${globalStyles.column} ${globalStyles.center}`}>
+            <div className={`${globalStyles.column} ${globalStyles.center} ${globalStyles.roundedContainer}`}>
                 <button onClick={logoutHandler}>Logout</button>
-                <div className={`${globalStyles.column} ${globalStyles.roundedContainer} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
-                    <div>
-                        <h1>Player Stats</h1>
-                    </div>
+                <div>
+                    <h1>Player Stats</h1>
+                </div>
+                <div className={`${globalStyles.column} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
                     {viewModel.user_details == null && <LoadingIcon/>}
                     <ul>
                         {viewModel?.closed_games?.map((value) => {
