@@ -198,7 +198,7 @@ function Home() {
                 </div>
                 <div className={`${globalStyles.column} ${globalStyles.spaceBetween} ${globalStyles.globalCenter}`}>
                     {viewModel.user_details == null && <LoadingIcon/>}
-                    <ul>
+                    <ul className={`${globalStyles.scroll}`}>
                         {viewModel?.closed_games?.map((value) => {
                             return (
                                 <ClosedGameComp game={value} key={value.game_id}/>
