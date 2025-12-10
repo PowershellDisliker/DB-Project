@@ -79,8 +79,6 @@ async def game_websocket(ws: WebSocket, config: Config = Depends(get_config), ga
                 db = get_db()
                 game_to_close = game_multiplexer.get_open_game_detail(initial_request.game_id)
 
-                print(game_to_close)
-
                 if game_to_close.user_1_id is None or game_to_close.user_2_id is None or game_to_close.start_time is None:
                     await broadcast(initial_request.game_id, "Cannot post game to ClosedGames")
                     continue

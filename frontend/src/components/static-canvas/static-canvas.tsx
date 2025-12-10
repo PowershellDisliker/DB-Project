@@ -16,7 +16,7 @@ function StaticCanvas({board_state, user_1_id}: StaticCanvasProps) {
         const ROW_COUNT = 6;
         const COL_COUNT = 7;
 
-        const COLORS = ["red", "yello"];
+        const COLORS = ["red", "yellow"];
 
         const width = canvasRef.current.clientWidth;
         const height = canvasRef.current.clientHeight;
