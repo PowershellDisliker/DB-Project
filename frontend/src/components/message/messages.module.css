@@ -1,0 +1,7 @@
+.sentMessage {
+    justify-content: right;
+}
+
+.receivedMessage {
+    justify-content: left;
+}
