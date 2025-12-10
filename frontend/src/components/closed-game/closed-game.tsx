@@ -51,7 +51,7 @@ function ClosedGameComp({game}: ClosedGameProps) {
 
     return (
         <div className={`${globalStyles.column} ${globalStyles.roundedContainer}`}>
-            <p className={`${globalStyles.center}`}>Winner: {userProfile1.user_id == game.winner && userProfile1.username}{userProfile2.user_id == game.winner && userProfile2.username}</p>
+            <p className={`${globalStyles.center}`}>Winner: {userProfile1.user_id == game.winner ? userProfile1.username : userProfile2.user_id == game.winner ? userProfile2.username : ""}</p>
             <StaticCanvas board_state={game.pieces} user_1_id={game.user_1_id}/>
         </div>
     )
