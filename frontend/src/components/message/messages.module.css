@@ -1,7 +1,7 @@
 .sentMessage {
-    justify-content: right;
+    text-align: right;
 }
 
 .receivedMessage {
-    justify-content: left;
+    text-align: left;
 }
