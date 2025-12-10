@@ -191,7 +191,7 @@ function Home() {
 
 
             {/* CLOSED GAMES */}
-            <div className={`${globalStyles.column} ${globalStyles.center} ${globalStyles.roundedContainer}`}>
+            <div className={`${globalStyles.column} ${globalStyles.center} ${globalStyles.roundedContainer} ${homeStyles.shorter}`}>
                 <button onClick={logoutHandler}>Logout</button>
                 <div>
                     <h1>Player Stats</h1>
