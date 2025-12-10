@@ -13,14 +13,17 @@ function StaticCanvas({board_state, user_1_id}: StaticCanvasProps) {
     // Render Given Board State
     useEffect(() => {
         if (!canvasRef.current) return;
+
+        canvasRef.current.width = canvasRef.current.offsetWidth;
+        canvasRef.current.height = canvasRef.current.offsetHeight;
         
         const ROW_COUNT = 6;
         const COL_COUNT = 7;
 
         const COLORS = ["red", "yellow"];
 
-        const width = canvasRef.current.offsetWidth;
-        const height = canvasRef.current.offsetHeight;
+        const width = canvasRef.current.width;
+        const height = canvasRef.current.height;
 
         const PIECE_RADIUS = Math.min((width / COL_COUNT) / 2, (height / ROW_COUNT) / 2);
 

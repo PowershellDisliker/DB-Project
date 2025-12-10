@@ -12,7 +12,7 @@ function Messages() {
     const config = useContext(ConfigContext);
     const [cookies] = useCookies(['jwt', 'id']);
 
-    const [reload, setReload] = useState<boolean>(false);
+    const [reload, setReload] = useState<boolean>(true);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [searchParams] = useSearchParams();
