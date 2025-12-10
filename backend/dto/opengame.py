@@ -9,6 +9,7 @@ class OpenGame(BaseModel):
     user_1_id: uuid.UUID | None
     user_2_id: uuid.UUID | None
     start_time: datetime | None
+    board_state: list[uuid.UUID | None] | None = None
 
 class GetOpenGamesResponse(BaseModel):
     games: list[uuid.UUID] | None = None
