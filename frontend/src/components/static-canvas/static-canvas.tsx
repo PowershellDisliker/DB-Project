@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import localStyles from './staticcanvas.module.css';
 
 interface StaticCanvasProps {
     board_state: Array<string | null>;
@@ -43,6 +44,7 @@ function StaticCanvas({board_state, user_1_id}: StaticCanvasProps) {
     return (
         <canvas 
             ref={canvasRef}
+            className={`${localStyles.canvas}`}
         />
     )
 }
