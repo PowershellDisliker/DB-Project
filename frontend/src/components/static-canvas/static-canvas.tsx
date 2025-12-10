@@ -19,8 +19,8 @@ function StaticCanvas({board_state, user_1_id}: StaticCanvasProps) {
 
         const COLORS = ["red", "yellow"];
 
-        const width = canvasRef.current.clientWidth;
-        const height = canvasRef.current.clientHeight;
+        const width = canvasRef.current.offsetWidth;
+        const height = canvasRef.current.offsetHeight;
 
         const PIECE_RADIUS = Math.min((width / COL_COUNT) / 2, (height / ROW_COUNT) / 2);
 

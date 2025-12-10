@@ -32,10 +32,12 @@ function Messages() {
     }
 
     useEffect(() => {
+        if (!reload) return;
         const inner = async () => {
             await compGetMessages();
         }
         inner();
+        setReload(false);
     }, [reload])
 
     const sendHandler = async () => {
@@ -48,7 +50,7 @@ function Messages() {
     }
 
     return (
-        <div className={globalStyles.center}>
+        <div className={`${globalStyles.center} ${globalStyles.column}`}>
             <ul>
                 {messages?.messages?.map((value) => 
                     <MessageComp sender_id={value.sender_id} recipient_id={value.recipient_id} time_stamp={value.time_stamp} message={value.message} message_id={value.message_id} key={value.message_id}/>
